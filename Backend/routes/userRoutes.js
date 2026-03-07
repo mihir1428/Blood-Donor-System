@@ -27,7 +27,7 @@ router.post("/register", (req, res) => {
       db.query(
         donorSql,
         [userId, blood_group, location, phone, null, 1],
-        (donorErr, donorResult) => {
+        (donorErr) => {
           if (donorErr) {
             console.log("Register donor error:", donorErr);
             return res.status(500).send("Donor registration failed");
@@ -44,6 +44,8 @@ router.post("/register", (req, res) => {
 
 // Login
 router.post("/login", (req, res) => {
+  console.log("LOGIN BODY:", req.body);
+
   const { email, password } = req.body;
 
   const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
@@ -51,10 +53,10 @@ router.post("/login", (req, res) => {
   db.query(sql, [email, password], (err, result) => {
     if (err) {
       console.log("Login error:", err);
-      return res.status(500).send("Login failed");
+      return res.status(500).json({ message: "Login failed" });
     }
 
-    res.json(result);
+    return res.json(result);
   });
 });
 

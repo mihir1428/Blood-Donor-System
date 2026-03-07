@@ -36,7 +36,7 @@ async function registerUser() {
     const data = await res.text();
 
     if (!res.ok) {
-      alert("Server error: " + data);
+      alert(data || "Registration failed");
       return;
     }
 
@@ -62,12 +62,13 @@ async function loginUser() {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      alert("Login failed");
+      const errText = await res.text();
+      alert(errText || "Login failed");
       return;
     }
+
+    const data = await res.json();
 
     if (data.length > 0) {
       localStorage.setItem("user", JSON.stringify(data[0]));
@@ -212,7 +213,7 @@ async function createRequest() {
     const data = await res.text();
 
     if (!res.ok) {
-      alert("Server error: " + data);
+      alert(data || "Request failed");
       return;
     }
 
@@ -286,7 +287,7 @@ async function updateDonorProfile() {
     const data = await res.text();
 
     if (!res.ok) {
-      alert("Server error: " + data);
+      alert(data || "Profile update failed");
       return;
     }
 
@@ -318,7 +319,7 @@ async function updateAvailability() {
     const data = await res.text();
 
     if (!res.ok) {
-      alert("Server error: " + data);
+      alert(data || "Availability update failed");
       return;
     }
 
@@ -373,7 +374,7 @@ async function deleteDonor(userId) {
     const data = await res.text();
 
     if (!res.ok) {
-      alert("Server error: " + data);
+      alert(data || "Delete failed");
       return;
     }
 
