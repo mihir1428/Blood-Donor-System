@@ -6,9 +6,15 @@ async function registerUser() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const role = document.getElementById("role").value;
-  const blood_group = document.getElementById("blood_group").value.trim();
-  const location = document.getElementById("location").value.trim();
-  const phone = document.getElementById("phone").value.trim();
+  const blood_group = document.getElementById("blood_group")
+    ? document.getElementById("blood_group").value.trim()
+    : "";
+  const location = document.getElementById("location")
+    ? document.getElementById("location").value.trim()
+    : "";
+  const phone = document.getElementById("phone")
+    ? document.getElementById("phone").value.trim()
+    : "";
 
   try {
     const res = await fetch(`${API}/users/register`, {
@@ -28,13 +34,16 @@ async function registerUser() {
     });
 
     const data = await res.text();
-    alert(data);
 
-    if (data.includes("Successfully")) {
-      window.location.href = "login.html";
+    if (!res.ok) {
+      alert("Server error: " + data);
+      return;
     }
+
+    alert(data);
+    window.location.href = "login.html";
   } catch (error) {
-    console.error(error);
+    console.error("Register error:", error);
     alert("Registration failed");
   }
 }
@@ -55,6 +64,11 @@ async function loginUser() {
 
     const data = await res.json();
 
+    if (!res.ok) {
+      alert("Login failed");
+      return;
+    }
+
     if (data.length > 0) {
       localStorage.setItem("user", JSON.stringify(data[0]));
       alert("Login successful");
@@ -70,7 +84,7 @@ async function loginUser() {
       alert("Invalid email or password");
     }
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     alert("Login failed");
   }
 }
@@ -80,21 +94,24 @@ async function loadDashboard() {
   try {
     const donorRes = await fetch(`${API}/donors/count`);
     const donorData = await donorRes.json();
-    document.getElementById("donorCount").innerText = donorData.total;
+    const donorCountEl = document.getElementById("donorCount");
+    if (donorCountEl) donorCountEl.innerText = donorData.total ?? 0;
 
     const requestRes = await fetch(`${API}/requests/count`);
     const requestData = await requestRes.json();
-    document.getElementById("requestCount").innerText = requestData.total;
+    const requestCountEl = document.getElementById("requestCount");
+    if (requestCountEl) requestCountEl.innerText = requestData.total ?? 0;
 
     const emergencyRes = await fetch(`${API}/requests/emergency`);
     const emergencyData = await emergencyRes.json();
-    document.getElementById("emergencyCount").innerText = emergencyData.total;
+    const emergencyCountEl = document.getElementById("emergencyCount");
+    if (emergencyCountEl) emergencyCountEl.innerText = emergencyData.total ?? 0;
   } catch (error) {
-    console.error(error);
+    console.error("Dashboard load error:", error);
   }
 }
 
-// Load donors
+// Load all donors
 async function loadDonors() {
   try {
     const res = await fetch(`${API}/donors`);
@@ -105,11 +122,11 @@ async function loadDonors() {
     donors.forEach((donor) => {
       html += `
         <tr>
-          <td>${donor.name}</td>
-          <td>${donor.blood_group}</td>
-          <td>${donor.location}</td>
+          <td>${donor.name || ""}</td>
+          <td>${donor.blood_group || ""}</td>
+          <td>${donor.location || ""}</td>
           <td>${donor.phone || ""}</td>
-          <td>${donor.email}</td>
+          <td>${donor.email || ""}</td>
           <td class="${donor.availability ? "status-available" : "status-unavailable"}">
             ${donor.availability ? "Available" : "Not Available"}
           </td>
@@ -117,15 +134,17 @@ async function loadDonors() {
       `;
     });
 
-    document.getElementById("donorTable").innerHTML = html;
+    const donorTable = document.getElementById("donorTable");
+    if (donorTable) donorTable.innerHTML = html;
   } catch (error) {
-    console.error(error);
+    console.error("Load donors error:", error);
   }
 }
 
 // Search donors
 async function searchDonors() {
-  const bloodGroup = document.getElementById("searchBloodGroup").value.trim();
+  const bloodGroupInput = document.getElementById("searchBloodGroup");
+  const bloodGroup = bloodGroupInput ? bloodGroupInput.value.trim() : "";
 
   if (!bloodGroup) {
     alert("Enter blood group");
@@ -133,7 +152,7 @@ async function searchDonors() {
   }
 
   try {
-    const res = await fetch(`${API}/donors/search/${bloodGroup}`);
+    const res = await fetch(`${API}/donors/search/${encodeURIComponent(bloodGroup)}`);
     const donors = await res.json();
 
     let html = "";
@@ -144,11 +163,11 @@ async function searchDonors() {
       donors.forEach((donor) => {
         html += `
           <tr>
-            <td>${donor.name}</td>
-            <td>${donor.blood_group}</td>
-            <td>${donor.location}</td>
+            <td>${donor.name || ""}</td>
+            <td>${donor.blood_group || ""}</td>
+            <td>${donor.location || ""}</td>
             <td>${donor.phone || ""}</td>
-            <td>${donor.email}</td>
+            <td>${donor.email || ""}</td>
             <td class="${donor.availability ? "status-available" : "status-unavailable"}">
               ${donor.availability ? "Available" : "Not Available"}
             </td>
@@ -157,9 +176,10 @@ async function searchDonors() {
       });
     }
 
-    document.getElementById("donorTable").innerHTML = html;
+    const donorTable = document.getElementById("donorTable");
+    if (donorTable) donorTable.innerHTML = html;
   } catch (error) {
-    console.error(error);
+    console.error("Search donors error:", error);
   }
 }
 
@@ -190,10 +210,16 @@ async function createRequest() {
     });
 
     const data = await res.text();
+
+    if (!res.ok) {
+      alert("Server error: " + data);
+      return;
+    }
+
     alert(data);
     window.location.href = "dashboard.html";
   } catch (error) {
-    console.error(error);
+    console.error("Request error:", error);
     alert("Request failed");
   }
 }
@@ -209,15 +235,27 @@ async function loadDonorProfile() {
 
     if (!donor) return;
 
-    document.getElementById("profileName").innerText = donor.name;
-    document.getElementById("profileEmail").innerText = donor.email;
-    document.getElementById("blood_group").value = donor.blood_group || "";
-    document.getElementById("location").value = donor.location || "";
-    document.getElementById("phone").value = donor.phone || "";
-    document.getElementById("last_donation").value = donor.last_donation ? donor.last_donation.split("T")[0] : "";
-    document.getElementById("availability").value = donor.availability ? "1" : "0";
+    const profileName = document.getElementById("profileName");
+    const profileEmail = document.getElementById("profileEmail");
+    const bloodGroup = document.getElementById("blood_group");
+    const location = document.getElementById("location");
+    const phone = document.getElementById("phone");
+    const lastDonation = document.getElementById("last_donation");
+    const availability = document.getElementById("availability");
+
+    if (profileName) profileName.innerText = donor.name || "";
+    if (profileEmail) profileEmail.innerText = donor.email || "";
+    if (bloodGroup) bloodGroup.value = donor.blood_group || "";
+    if (location) location.value = donor.location || "";
+    if (phone) phone.value = donor.phone || "";
+    if (lastDonation) {
+      lastDonation.value = donor.last_donation
+        ? String(donor.last_donation).split("T")[0]
+        : "";
+    }
+    if (availability) availability.value = donor.availability ? "1" : "0";
   } catch (error) {
-    console.error(error);
+    console.error("Load donor profile error:", error);
   }
 }
 
@@ -246,9 +284,15 @@ async function updateDonorProfile() {
     });
 
     const data = await res.text();
+
+    if (!res.ok) {
+      alert("Server error: " + data);
+      return;
+    }
+
     alert(data);
   } catch (error) {
-    console.error(error);
+    console.error("Profile update error:", error);
     alert("Profile update failed");
   }
 }
@@ -272,9 +316,15 @@ async function updateAvailability() {
     });
 
     const data = await res.text();
+
+    if (!res.ok) {
+      alert("Server error: " + data);
+      return;
+    }
+
     alert(data);
   } catch (error) {
-    console.error(error);
+    console.error("Availability update error:", error);
     alert("Availability update failed");
   }
 }
@@ -290,10 +340,10 @@ async function loadAdminDonors() {
     donors.forEach((donor) => {
       html += `
         <tr>
-          <td>${donor.name}</td>
-          <td>${donor.email}</td>
-          <td>${donor.blood_group}</td>
-          <td>${donor.location}</td>
+          <td>${donor.name || ""}</td>
+          <td>${donor.email || ""}</td>
+          <td>${donor.blood_group || ""}</td>
+          <td>${donor.location || ""}</td>
           <td>${donor.phone || ""}</td>
           <td>${donor.availability ? "Available" : "Not Available"}</td>
           <td>
@@ -303,9 +353,10 @@ async function loadAdminDonors() {
       `;
     });
 
-    document.getElementById("adminDonorTable").innerHTML = html;
+    const adminDonorTable = document.getElementById("adminDonorTable");
+    if (adminDonorTable) adminDonorTable.innerHTML = html;
   } catch (error) {
-    console.error(error);
+    console.error("Load admin donors error:", error);
   }
 }
 
@@ -320,14 +371,20 @@ async function deleteDonor(userId) {
     });
 
     const data = await res.text();
+
+    if (!res.ok) {
+      alert("Server error: " + data);
+      return;
+    }
+
     alert(data);
     loadAdminDonors();
   } catch (error) {
-    console.error(error);
+    console.error("Delete donor error:", error);
   }
 }
 
-// Load requests for admin
+// Load all requests for admin
 async function loadRequests() {
   try {
     const res = await fetch(`${API}/requests`);
@@ -340,20 +397,21 @@ async function loadRequests() {
 
       html += `
         <tr class="${rowClass}">
-          <td>${request.id}</td>
-          <td>${request.requester_name}</td>
+          <td>${request.id || ""}</td>
+          <td>${request.requester_name || ""}</td>
           <td>${request.requester_email || ""}</td>
-          <td>${request.blood_group}</td>
-          <td>${request.location}</td>
-          <td>${request.priority}</td>
-          <td>${request.status}</td>
+          <td>${request.blood_group || ""}</td>
+          <td>${request.location || ""}</td>
+          <td>${request.priority || ""}</td>
+          <td>${request.status || ""}</td>
         </tr>
       `;
     });
 
-    document.getElementById("requestTable").innerHTML = html;
+    const requestTable = document.getElementById("requestTable");
+    if (requestTable) requestTable.innerHTML = html;
   } catch (error) {
-    console.error(error);
+    console.error("Load requests error:", error);
   }
 }
 
