@@ -5,12 +5,19 @@ const db = mysql.createPool({
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT,
+  port: Number(process.env.MYSQLPORT),
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-console.log("MySQL Pool Connected");
+db.getConnection((err, connection) => {
+  if (err) {
+    console.log("MySQL pool error:", err);
+  } else {
+    console.log("MySQL Pool Connected");
+    connection.release();
+  }
+});
 
 module.exports = db;
