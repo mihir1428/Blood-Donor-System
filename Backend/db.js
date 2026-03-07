@@ -13,4 +13,4 @@ const db = mysql.createPool({
 
 console.log("MySQL Pool Connected");
 
-module.exports = db.promise();
+module.exports = db;
