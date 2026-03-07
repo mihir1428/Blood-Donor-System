@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Admin Dashboard</h2>
+      <button type="button" onclick="logoutUser()">Logout</button>
+
+      <br><br>
+
+      <h3>Manage Donors</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Blood Group</th>
+            <th>Location</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="adminDonorTable"></tbody>
+      </table>
+
+      <br><br>
+
+      <h3>Monitor Blood Requests</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Requester</th>
+            <th>Email</th>
+            <th>Blood Group</th>
+            <th>Location</th>
+            <th>Priority</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="requestTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "admin") {
+      window.location.href = "login.html";
+    }
+    loadAdminDonors();
+    loadRequests();
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Donor Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Donor Dashboard</h2>
+      <p><strong>Name:</strong> <span id="profileName"></span></p>
+      <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+
+      <br>
+
+      <h3>Update Profile</h3>
+      <form onsubmit="updateDonorProfile(); return false;">
+        <input type="text" id="blood_group" placeholder="Blood Group" required>
+        <input type="text" id="location" placeholder="Location" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
+        <input type="date" id="last_donation">
+
+        <button type="submit">Update Profile</button>
+      </form>
+
+      <br>
+
+      <h3>Availability</h3>
+      <select id="availability">
+        <option value="1">Available</option>
+        <option value="0">Not Available</option>
+      </select>
+      <button type="button" onclick="updateAvailability()">Update Status</button>
+
+      <br><br>
+      <button type="button" onclick="logoutUser()">Logout</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      window.location.href = "login.html";
+    }
+    loadDonorProfile();
+  </script>
+</body>
+</html>

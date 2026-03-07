@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Donor Search</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Search Donors</h2>
+
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="searchBloodGroup" placeholder="Enter Blood Group">
+        <button type="button" onclick="searchDonors()">Search</button>
+        <button type="button" onclick="loadDonors()">Show All</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Blood Group</th>
+            <th>Location</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="donorTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    loadDonors();
+  </script>
+</body>
+</html>

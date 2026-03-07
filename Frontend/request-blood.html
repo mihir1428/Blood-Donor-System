@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Request Blood</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Blood Request Form</h2>
+
+      <form onsubmit="createRequest(); return false;">
+        <input type="text" id="requestBloodGroup" placeholder="Blood Group" required>
+        <input type="text" id="requestLocation" placeholder="Location" required>
+
+        <select id="requestPriority" required>
+          <option value="">Select Priority</option>
+          <option value="normal">Normal</option>
+          <option value="emergency">Emergency</option>
+        </select>
+
+        <button type="submit">Submit Request</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

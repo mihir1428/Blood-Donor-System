@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>User Dashboard</h2>
+      <p id="welcomeText"></p>
+
+      <div class="dashboard-card">
+        <h3>Total Donors</h3>
+        <p id="donorCount">0</p>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>Active Requests</h3>
+        <p id="requestCount">0</p>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>Emergency</h3>
+        <p id="emergencyCount">0</p>
+      </div>
+
+      <div class="top-actions">
+        <a href="donorlist.html"><button type="button">Search Donors</button></a>
+        <a href="request-blood.html"><button type="button">Request Blood</button></a>
+        <button type="button" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      document.getElementById("welcomeText").innerText = `Welcome, ${user.name} (${user.role})`;
+    } else {
+      window.location.href = "login.html";
+    }
+    loadDashboard();
+  </script>
+</body>
+</html>
