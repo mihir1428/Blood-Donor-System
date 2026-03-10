@@ -1,34 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>User Dashboard</title>
+  <title>Requester Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <div class="container wide-container">
     <div class="card">
-      <h2>Requester Dashboard</h2>
-      <p id="welcomeText"></p>
-
-      <div class="dashboard-card">
-        <h3>Total Donors</h3>
-        <p id="donorCount">0</p>
+      <div class="dashboard-header-row">
+        <div>
+          <h2>Requester Dashboard</h2>
+          <p id="welcomeText" class="muted-text"></p>
+        </div>
+        <div class="top-actions">
+          <a href="donorlist.html"><button type="button">View Donor List</button></a>
+          <a href="request-blood.html"><button type="button">Request Blood</button></a>
+          <button type="button" onclick="logoutUser()">Logout</button>
+        </div>
       </div>
 
-      <div class="dashboard-card">
-        <h3>Active Requests</h3>
-        <p id="requestCount">0</p>
+      <div class="stats-grid">
+        <div class="dashboard-card">
+          <h3>Total Donors</h3>
+          <p id="donorCount">0</p>
+        </div>
+
+        <div class="dashboard-card">
+          <h3>Total Requests</h3>
+          <p id="requestCount">0</p>
+        </div>
+
+        <div class="dashboard-card">
+          <h3>Emergency Requests</h3>
+          <p id="emergencyCount">0</p>
+        </div>
       </div>
 
-      <div class="dashboard-card">
-        <h3>Emergency</h3>
-        <p id="emergencyCount">0</p>
+      <h3 class="section-title">Available Blood Group Summary</h3>
+      <div class="blood-grid">
+        <div class="blood-card"><span>A+</span><strong id="countAPlus">0</strong></div>
+        <div class="blood-card"><span>B+</span><strong id="countBPlus">0</strong></div>
+        <div class="blood-card"><span>O+</span><strong id="countOPlus">0</strong></div>
+        <div class="blood-card"><span>AB+</span><strong id="countABPlus">0</strong></div>
+        <div class="blood-card"><span>A-</span><strong id="countAMinus">0</strong></div>
+        <div class="blood-card"><span>B-</span><strong id="countBMinus">0</strong></div>
+        <div class="blood-card"><span>O-</span><strong id="countOMinus">0</strong></div>
+        <div class="blood-card"><span>AB-</span><strong id="countABMinus">0</strong></div>
       </div>
 
-      <div class="top-actions">
-        <a href="donorlist.html"><button type="button">Search Donors</button></a>
-        <a href="request-blood.html"><button type="button">Request Blood</button></a>
-        <button type="button" onclick="logoutUser()">Logout</button>
+      <div class="two-column dashboard-sections">
+        <div class="card inner-card">
+          <h3>Nearby / Emergency Donor Search</h3>
+
+          <form onsubmit="searchDashboardDonors(); return false;">
+            <select id="dashboardBloodGroup">
+              <option value="">Select Blood Group</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+
+            <input type="text" id="dashboardLocation" placeholder="Enter location">
+
+            <select id="dashboardAvailability">
+              <option value="1">Available Donors Only</option>
+              <option value="">All Donors</option>
+            </select>
+
+            <select id="dashboardEmergency">
+              <option value="0">Normal Search</option>
+              <option value="1">Emergency Search</option>
+            </select>
+
+            <button type="submit">Search</button>
+          </form>
+
+          <div id="dashboardDonorResults" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="card inner-card">
+          <h3>Dashboard Assistant</h3>
+          <div class="chatbox" id="chatBox">
+            <div class="chat-message bot">
+              Ask me about emergency donor search, last donation date, blood group availability or dashboard usage.
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Write your message...">
+            <button type="button" onclick="sendChatMessage()">Send</button>
+          </div>
+
+          <div class="mini-feature-list">
+            <div class="mini-feature">Emergency search tips</div>
+            <div class="mini-feature">Last donation status</div>
+            <div class="mini-feature">Eligibility help</div>
+            <div class="mini-feature">Blood group summary</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -42,6 +116,7 @@
       window.location.href = "login.html";
     }
     loadDashboard();
+    loadBloodGroupCounts();
   </script>
 </body>
 </html>
