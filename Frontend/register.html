@@ -1,16 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Register</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Blood Donor System</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div class="container">
+
+    <div class="header">
+      <h1>Blood Donor System</h1>
+
+      <div class="auth-buttons">
+        <a href="index.html" class="login-btn">Home</a>
+        <a href="login.html" class="register-btn">Login</a>
+      </div>
+    </div>
+
     <div class="card">
       <h2>Register</h2>
 
       <form onsubmit="registerUser(); return false;">
-        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="name" placeholder="Full Name" required>
         <input type="email" id="email" placeholder="Email" required>
         <input type="password" id="password" placeholder="Password" required>
 
@@ -26,7 +39,12 @@
 
         <button type="submit">Register</button>
       </form>
+
+      <div class="top-actions">
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+      </div>
     </div>
+
   </div>
 
   <script src="script.js"></script>
