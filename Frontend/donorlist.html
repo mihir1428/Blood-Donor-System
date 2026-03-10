@@ -5,29 +5,56 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <div class="container wide-container">
     <div class="card">
-      <h2>Search Donors</h2>
+      <div class="dashboard-header-row">
+        <h2>Search Donors</h2>
+        <div class="top-actions">
+          <a href="dashboard.html"><button type="button">Back Dashboard</button></a>
+        </div>
+      </div>
 
-      <div style="margin-bottom: 20px;">
-        <input type="text" id="searchBloodGroup" placeholder="Enter Blood Group">
+      <div class="filter-grid">
+        <select id="searchBloodGroup">
+          <option value="">Select Blood Group</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+        </select>
+
+        <input type="text" id="searchLocation" placeholder="Enter location">
+
+        <select id="searchAvailability">
+          <option value="1">Available Only</option>
+          <option value="">All Donors</option>
+        </select>
+
         <button type="button" onclick="searchDonors()">Search</button>
         <button type="button" onclick="loadDonors()">Show All</button>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Blood Group</th>
-            <th>Location</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="donorTable"></tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Blood Group</th>
+              <th>Location</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Last Donation</th>
+              <th>Eligibility</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="donorTable"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
