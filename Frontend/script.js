@@ -569,33 +569,37 @@ async function loadRequests() {
 
 // Simple assistant chat
 function getBotReply(message) {
-  const text = message.toLowerCase();
+  const text = message.toLowerCase().trim();
 
   if (text.includes("emergency")) {
-    return "Emergency search use korar jonno blood group, location dao, tarpor Emergency Search select koro. Available donor ar eligibility first priority te dekhabe.";
+    return "For emergency search, select the blood group and district, then choose Emergency Search. Available and eligible donors will be shown first.";
   }
 
-  if (text.includes("last donation") || text.includes("rokto") || text.includes("donation")) {
-    return "Search result e last donation date show korbe. Jodi last donation theke 90 din hoye jai tahole donor eligible dhora hocche.";
+  if (text.includes("last donation") || text.includes("donation")) {
+    return "The search result shows the donor's last donation date. A donor is usually considered eligible again after 90 days.";
   }
 
   if (text.includes("eligible") || text.includes("eligibility")) {
-    return "Eligibility check last donation date diye hoy. 90 din ba tar beshi hole Eligible now, na hole Wait X more day(s) show korbe.";
+    return "Eligibility is calculated from the last donation date. If 90 or more days have passed, the donor is eligible. Otherwise, the system shows the remaining waiting time.";
   }
 
   if (text.includes("dashboard")) {
-    return "Requester dashboard e total donor, total request, emergency request ar blood group wise available donor count dekhte parba.";
+    return "The requester dashboard shows total donors, total requests, emergency requests, and blood-group-wise available donor counts.";
   }
 
-  if (text.includes("search")) {
-    return "Search e blood group, location, availability, emergency option use korte parba. Homepage ar requester dashboard duijagatai search ache.";
+  if (text.includes("search") || text.includes("location") || text.includes("district")) {
+    return "You can search donors by blood group, district, availability, and emergency type from both the homepage and the requester dashboard.";
   }
 
   if (text.includes("feature") || text.includes("professional")) {
-    return "Professional look er jonno emergency badge, last donation info, eligibility status, dashboard cards, assistant box, donor analytics ar filtered search add kora hoyeche.";
+    return "Professional features include dashboard cards, emergency search, donor eligibility status, last donation tracking, filtered donor search, and assistant support.";
   }
 
-  return "Ami blood donor system assistant. Tumi emergency search, donor eligibility, last donation date, dashboard feature ba professional improvements niye jiggesh korte paro.";
+  if (text.includes("blood")) {
+    return "You can find blood donors by selecting a blood group and district, then applying availability or emergency filters.";
+  }
+
+  return "Hello! I am the Blood Donor System assistant. Ask me about donor search, emergency blood requests, eligibility, districts, or dashboard features.";
 }
 
 function appendChatMessage(text, type) {
