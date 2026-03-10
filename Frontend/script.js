@@ -599,7 +599,7 @@ function getBotReply(message) {
     return "You can find blood donors by selecting a blood group and district, then applying availability or emergency filters.";
   }
 
-  return "Hello! I am the Blood Donor System assistant. Ask me about donor search, emergency blood requests, eligibility, districts, or dashboard features.";
+  return "Ami Sumaiya.Ekhane Amar Sathe Message kor,Sudhu Mahir ";
 }
 
 function appendChatMessage(text, type) {
