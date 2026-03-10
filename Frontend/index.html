@@ -7,9 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div class="container">
-
+  <div class="container wide-container">
     <div class="header">
       <h1>Blood Donor System</h1>
 
@@ -19,31 +17,76 @@
       </div>
     </div>
 
-    <div class="card">
-      <h2>Find Blood Donor</h2>
-
-      <form onsubmit="searchHomeDonors(); return false;">
-        <label for="bloodGroup">Blood Group</label>
-        <select id="bloodGroup">
-          <option value="A+">A+</option>
-          <option value="B+">B+</option>
-          <option value="O+">O+</option>
-          <option value="AB+">AB+</option>
-          <option value="A-">A-</option>
-          <option value="B-">B-</option>
-          <option value="O-">O-</option>
-          <option value="AB-">AB-</option>
-        </select>
-
-        <label for="location">Location</label>
-        <input type="text" id="location" placeholder="Enter city">
-
-        <button type="submit">Search Donor</button>
-      </form>
-
-      <div id="donorResults" style="margin-top: 20px;"></div>
+    <div class="hero-card">
+      <div>
+        <h2>Find Nearby Blood Donors Fast</h2>
+        <p class="muted-text">
+          Search donors by blood group, location, emergency need and see last donation date instantly.
+        </p>
+      </div>
+      <div class="hero-badge">24/7 Emergency Support</div>
     </div>
 
+    <div class="two-column">
+      <div class="card">
+        <h2>Search Blood Donor</h2>
+
+        <form onsubmit="searchHomeDonors(); return false;">
+          <label for="bloodGroup">Blood Group</label>
+          <select id="bloodGroup">
+            <option value="">Select Blood Group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+
+          <label for="location">Location</label>
+          <input type="text" id="location" placeholder="Enter city or area">
+
+          <label for="homeAvailability">Availability</label>
+          <select id="homeAvailability">
+            <option value="1">Available Donors Only</option>
+            <option value="">All Donors</option>
+          </select>
+
+          <label for="homeEmergency">Search Type</label>
+          <select id="homeEmergency">
+            <option value="0">Normal Search</option>
+            <option value="1">Emergency Search</option>
+          </select>
+
+          <button type="submit">Search Donor</button>
+        </form>
+
+        <div id="donorResults" style="margin-top: 20px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Quick Help Assistant</h2>
+        <div class="chatbox" id="chatBox">
+          <div class="chat-message bot">
+            Hello! Ask me about blood search, emergency donor, eligibility or dashboard features.
+          </div>
+        </div>
+
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Type your question here...">
+          <button type="button" onclick="sendChatMessage()">Send</button>
+        </div>
+
+        <div class="mini-feature-list">
+          <div class="mini-feature">Emergency donor search</div>
+          <div class="mini-feature">Eligibility checking</div>
+          <div class="mini-feature">Location based filtering</div>
+          <div class="mini-feature">Last donation tracking</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
