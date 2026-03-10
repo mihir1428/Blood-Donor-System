@@ -4,42 +4,32 @@
   <title>Login - Blood Donor System</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+  <div class="container">
+    <div class="header">
+      <h1>Blood Donor System</h1>
 
-<div class="container">
+      <div class="auth-buttons">
+        <a href="index.html" class="login-btn">Home</a>
+        <a href="register.html" class="register-btn">Register</a>
+      </div>
+    </div>
 
-  <div class="header">
-    <h1>Blood Donor System</h1>
+    <div class="card">
+      <h2>Login</h2>
 
-    <div class="auth-buttons">
-      <a href="index.html" class="login-btn">Home</a>
-      <a href="register.html" class="register-btn">Register</a>
+      <form onsubmit="loginUser(); return false;">
+        <input type="email" id="loginEmail" placeholder="Enter Email" required>
+        <input type="password" id="loginPassword" placeholder="Enter Password" required>
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="top-actions">
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Login</h2>
-
-    <form onsubmit="loginUser(); return false;">
-      
-      <input type="email" id="loginEmail" placeholder="Enter Email" required>
-
-      <input type="password" id="loginPassword" placeholder="Enter Password" required>
-
-      <button type="submit">Login</button>
-
-    </form>
-
-    <div class="top-actions">
-      <p>Don't have an account? <a href="register.html">Register here</a></p>
-    </div>
-
-  </div>
-
-</div>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
