@@ -1,5 +1,51 @@
 const API = "/api";
 
+function formatDate(value) {
+  if (!value) return "Not yet";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toISOString().split("T")[0];
+}
+
+function getEligibilityClass(text) {
+  if (!text) return "status-unavailable";
+  return text.toLowerCase().includes("eligible") ? "status-available" : "status-unavailable";
+}
+
+function donorRowTemplate(donor) {
+  return `
+    <tr>
+      <td>${donor.name || ""}</td>
+      <td>${donor.blood_group || ""}</td>
+      <td>${donor.location || ""}</td>
+      <td>${donor.phone || ""}</td>
+      <td>${donor.email || ""}</td>
+      <td>${formatDate(donor.last_donation)}</td>
+      <td class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || ""}</td>
+      <td class="${donor.availability ? "status-available" : "status-unavailable"}">
+        ${donor.availability ? "Available" : "Not Available"}
+      </td>
+    </tr>
+  `;
+}
+
+function donorResultCard(donor) {
+  return `
+    <div class="result-card">
+      <div class="result-top">
+        <h4>${donor.name || "Unknown Donor"}</h4>
+        <span class="badge">${donor.blood_group || ""}</span>
+      </div>
+      <p><strong>Location:</strong> ${donor.location || ""}</p>
+      <p><strong>Phone:</strong> ${donor.phone || ""}</p>
+      <p><strong>Email:</strong> ${donor.email || ""}</p>
+      <p><strong>Last Donation:</strong> ${formatDate(donor.last_donation)}</p>
+      <p><strong>Eligibility:</strong> <span class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || ""}</span></p>
+      <p><strong>Status:</strong> <span class="${donor.availability ? "status-available" : "status-unavailable"}">${donor.availability ? "Available" : "Not Available"}</span></p>
+    </div>
+  `;
+}
+
 // Register
 async function registerUser() {
   const name = document.getElementById("name").value.trim();
@@ -48,6 +94,14 @@ async function registerUser() {
   }
 }
 
+function toggleDonorFields() {
+  const role = document.getElementById("role");
+  const donorFields = document.getElementById("donorFields");
+  if (!role || !donorFields) return;
+
+  donorFields.style.display = role.value === "donor" ? "block" : "none";
+}
+
 // Login
 async function loginUser() {
   const email = document.getElementById("loginEmail").value.trim();
@@ -90,7 +144,7 @@ async function loginUser() {
   }
 }
 
-// Dashboard counters
+// Requester dashboard stats
 async function loadDashboard() {
   try {
     const donorRes = await fetch(`${API}/donors/count`);
@@ -112,6 +166,32 @@ async function loadDashboard() {
   }
 }
 
+// Blood group counts for dashboard
+async function loadBloodGroupCounts() {
+  try {
+    const res = await fetch(`${API}/donors/group-counts`);
+    const data = await res.json();
+
+    const mapper = {
+      countAPlus: data["A+"] || 0,
+      countAMinus: data["A-"] || 0,
+      countBPlus: data["B+"] || 0,
+      countBMinus: data["B-"] || 0,
+      countOPlus: data["O+"] || 0,
+      countOMinus: data["O-"] || 0,
+      countABPlus: data["AB+"] || 0,
+      countABMinus: data["AB-"] || 0
+    };
+
+    Object.keys(mapper).forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = mapper[id];
+    });
+  } catch (error) {
+    console.error("Blood count load error:", error);
+  }
+}
+
 // Load all donors
 async function loadDonors() {
   try {
@@ -120,20 +200,13 @@ async function loadDonors() {
 
     let html = "";
 
-    donors.forEach((donor) => {
-      html += `
-        <tr>
-          <td>${donor.name || ""}</td>
-          <td>${donor.blood_group || ""}</td>
-          <td>${donor.location || ""}</td>
-          <td>${donor.phone || ""}</td>
-          <td>${donor.email || ""}</td>
-          <td class="${donor.availability ? "status-available" : "status-unavailable"}">
-            ${donor.availability ? "Available" : "Not Available"}
-          </td>
-        </tr>
-      `;
-    });
+    if (!donors.length) {
+      html = `<tr><td colspan="8">No donors found</td></tr>`;
+    } else {
+      donors.forEach((donor) => {
+        html += donorRowTemplate(donor);
+      });
+    }
 
     const donorTable = document.getElementById("donorTable");
     if (donorTable) donorTable.innerHTML = html;
@@ -142,38 +215,35 @@ async function loadDonors() {
   }
 }
 
-// Search donors for other pages
+// Search donors list page
 async function searchDonors() {
-  const bloodGroupInput = document.getElementById("searchBloodGroup");
-  const bloodGroup = bloodGroupInput ? bloodGroupInput.value.trim() : "";
-
-  if (!bloodGroup) {
-    alert("Enter blood group");
-    return;
-  }
+  const bloodGroup = document.getElementById("searchBloodGroup")
+    ? document.getElementById("searchBloodGroup").value.trim()
+    : "";
+  const location = document.getElementById("searchLocation")
+    ? document.getElementById("searchLocation").value.trim()
+    : "";
+  const availability = document.getElementById("searchAvailability")
+    ? document.getElementById("searchAvailability").value
+    : "";
 
   try {
-    const res = await fetch(`${API}/donors/search/${encodeURIComponent(bloodGroup)}`);
+    const query = new URLSearchParams({
+      blood_group: bloodGroup,
+      location,
+      availability
+    });
+
+    const res = await fetch(`${API}/donors/search?${query.toString()}`);
     const donors = await res.json();
 
     let html = "";
 
     if (donors.length === 0) {
-      html = `<tr><td colspan="6">No donors found</td></tr>`;
+      html = `<tr><td colspan="8">No donors found</td></tr>`;
     } else {
       donors.forEach((donor) => {
-        html += `
-          <tr>
-            <td>${donor.name || ""}</td>
-            <td>${donor.blood_group || ""}</td>
-            <td>${donor.location || ""}</td>
-            <td>${donor.phone || ""}</td>
-            <td>${donor.email || ""}</td>
-            <td class="${donor.availability ? "status-available" : "status-unavailable"}">
-              ${donor.availability ? "Available" : "Not Available"}
-            </td>
-          </tr>
-        `;
+        html += donorRowTemplate(donor);
       });
     }
 
@@ -187,11 +257,20 @@ async function searchDonors() {
 // Homepage donor search
 async function searchHomeDonors() {
   const bloodGroup = document.getElementById("bloodGroup").value.trim();
-  const location = document.getElementById("location").value.trim().toLowerCase();
+  const location = document.getElementById("location").value.trim();
+  const availability = document.getElementById("homeAvailability").value;
+  const emergency = document.getElementById("homeEmergency").value;
   const resultBox = document.getElementById("donorResults");
 
   try {
-    const res = await fetch(`${API}/donors/search/${encodeURIComponent(bloodGroup)}`);
+    const query = new URLSearchParams({
+      blood_group: bloodGroup,
+      location,
+      availability,
+      emergency
+    });
+
+    const res = await fetch(`${API}/donors/search?${query.toString()}`);
 
     if (!res.ok) {
       resultBox.innerHTML = "<p style='color:red; margin-top:10px;'>Search failed.</p>";
@@ -200,64 +279,53 @@ async function searchHomeDonors() {
 
     const donors = await res.json();
 
-    let filteredDonors = donors;
-
-    if (location) {
-      filteredDonors = donors.filter((donor) =>
-        (donor.location || "").toLowerCase().includes(location)
-      );
-    }
-
-    if (!filteredDonors || filteredDonors.length === 0) {
+    if (!donors || donors.length === 0) {
       resultBox.innerHTML = "<p style='color:red; margin-top:10px;'>No donor found.</p>";
       return;
     }
 
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Blood Group</th>
-            <th>Location</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-    filteredDonors.forEach((donor) => {
-      html += `
-        <tr>
-          <td>${donor.name || ""}</td>
-          <td>${donor.blood_group || ""}</td>
-          <td>${donor.location || ""}</td>
-          <td>${donor.phone || ""}</td>
-          <td>${donor.email || ""}</td>
-          <td class="${donor.availability ? "status-available" : "status-unavailable"}">
-            ${donor.availability ? "Available" : "Not Available"}
-          </td>
-        </tr>
-      `;
-    });
-
-    html += `
-        </tbody>
-      </table>
-    `;
-
-    resultBox.innerHTML = html;
+    resultBox.innerHTML = donors.map(donorResultCard).join("");
   } catch (error) {
     console.error("Homepage donor search error:", error);
     resultBox.innerHTML = "<p style='color:red; margin-top:10px;'>Search failed.</p>";
   }
 }
 
+// Dashboard donor search
+async function searchDashboardDonors() {
+  const bloodGroup = document.getElementById("dashboardBloodGroup").value.trim();
+  const location = document.getElementById("dashboardLocation").value.trim();
+  const availability = document.getElementById("dashboardAvailability").value;
+  const emergency = document.getElementById("dashboardEmergency").value;
+  const resultBox = document.getElementById("dashboardDonorResults");
+
+  try {
+    const query = new URLSearchParams({
+      blood_group: bloodGroup,
+      location,
+      availability,
+      emergency
+    });
+
+    const res = await fetch(`${API}/donors/search?${query.toString()}`);
+    const donors = await res.json();
+
+    if (!donors || donors.length === 0) {
+      resultBox.innerHTML = "<p style='color:red;'>No donor found.</p>";
+      return;
+    }
+
+    resultBox.innerHTML = donors.map(donorResultCard).join("");
+  } catch (error) {
+    console.error("Dashboard donor search error:", error);
+    resultBox.innerHTML = "<p style='color:red;'>Search failed.</p>";
+  }
+}
+
 // Create request
 async function createRequest() {
   const user = JSON.parse(localStorage.getItem("user"));
+
   const requester_name = user ? user.name : "";
   const requester_email = user ? user.email : "";
 
@@ -314,6 +382,7 @@ async function loadDonorProfile() {
     const phone = document.getElementById("phone");
     const lastDonation = document.getElementById("last_donation");
     const availability = document.getElementById("availability");
+    const eligibilityStatus = document.getElementById("eligibilityStatus");
 
     if (profileName) profileName.innerText = donor.name || "";
     if (profileEmail) profileEmail.innerText = donor.email || "";
@@ -321,11 +390,14 @@ async function loadDonorProfile() {
     if (location) location.value = donor.location || "";
     if (phone) phone.value = donor.phone || "";
     if (lastDonation) {
-      lastDonation.value = donor.last_donation
-        ? String(donor.last_donation).split("T")[0]
-        : "";
+      lastDonation.value = donor.last_donation ? String(donor.last_donation).split("T")[0] : "";
     }
     if (availability) availability.value = donor.availability ? "1" : "0";
+
+    if (eligibilityStatus) {
+      eligibilityStatus.innerText = donor.eligibility_text || "";
+      eligibilityStatus.className = getEligibilityClass(donor.eligibility_text);
+    }
   } catch (error) {
     console.error("Load donor profile error:", error);
   }
@@ -363,6 +435,7 @@ async function updateDonorProfile() {
     }
 
     alert(data);
+    loadDonorProfile();
   } catch (error) {
     console.error("Profile update error:", error);
     alert("Profile update failed");
@@ -395,6 +468,7 @@ async function updateAvailability() {
     }
 
     alert(data);
+    loadDonorProfile();
   } catch (error) {
     console.error("Availability update error:", error);
     alert("Availability update failed");
@@ -409,21 +483,27 @@ async function loadAdminDonors() {
 
     let html = "";
 
-    donors.forEach((donor) => {
-      html += `
-        <tr>
-          <td>${donor.name || ""}</td>
-          <td>${donor.email || ""}</td>
-          <td>${donor.blood_group || ""}</td>
-          <td>${donor.location || ""}</td>
-          <td>${donor.phone || ""}</td>
-          <td>${donor.availability ? "Available" : "Not Available"}</td>
-          <td>
-            <button onclick="deleteDonor(${donor.user_id})">Delete</button>
-          </td>
-        </tr>
-      `;
-    });
+    if (!donors.length) {
+      html = `<tr><td colspan="9">No donors found</td></tr>`;
+    } else {
+      donors.forEach((donor) => {
+        html += `
+          <tr>
+            <td>${donor.name || ""}</td>
+            <td>${donor.email || ""}</td>
+            <td>${donor.blood_group || ""}</td>
+            <td>${donor.location || ""}</td>
+            <td>${donor.phone || ""}</td>
+            <td>${formatDate(donor.last_donation)}</td>
+            <td class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || ""}</td>
+            <td>${donor.availability ? "Available" : "Not Available"}</td>
+            <td>
+              <button onclick="deleteDonor(${donor.user_id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
 
     const adminDonorTable = document.getElementById("adminDonorTable");
     if (adminDonorTable) adminDonorTable.innerHTML = html;
@@ -456,7 +536,7 @@ async function deleteDonor(userId) {
   }
 }
 
-// Load all requests for admin
+// Load all requests
 async function loadRequests() {
   try {
     const res = await fetch(`${API}/requests`);
@@ -485,6 +565,65 @@ async function loadRequests() {
   } catch (error) {
     console.error("Load requests error:", error);
   }
+}
+
+// Simple assistant chat
+function getBotReply(message) {
+  const text = message.toLowerCase();
+
+  if (text.includes("emergency")) {
+    return "Emergency search use korar jonno blood group, location dao, tarpor Emergency Search select koro. Available donor ar eligibility first priority te dekhabe.";
+  }
+
+  if (text.includes("last donation") || text.includes("rokto") || text.includes("donation")) {
+    return "Search result e last donation date show korbe. Jodi last donation theke 90 din hoye jai tahole donor eligible dhora hocche.";
+  }
+
+  if (text.includes("eligible") || text.includes("eligibility")) {
+    return "Eligibility check last donation date diye hoy. 90 din ba tar beshi hole Eligible now, na hole Wait X more day(s) show korbe.";
+  }
+
+  if (text.includes("dashboard")) {
+    return "Requester dashboard e total donor, total request, emergency request ar blood group wise available donor count dekhte parba.";
+  }
+
+  if (text.includes("search")) {
+    return "Search e blood group, location, availability, emergency option use korte parba. Homepage ar requester dashboard duijagatai search ache.";
+  }
+
+  if (text.includes("feature") || text.includes("professional")) {
+    return "Professional look er jonno emergency badge, last donation info, eligibility status, dashboard cards, assistant box, donor analytics ar filtered search add kora hoyeche.";
+  }
+
+  return "Ami blood donor system assistant. Tumi emergency search, donor eligibility, last donation date, dashboard feature ba professional improvements niye jiggesh korte paro.";
+}
+
+function appendChatMessage(text, type) {
+  const chatBox = document.getElementById("chatBox");
+  if (!chatBox) return;
+
+  const div = document.createElement("div");
+  div.className = `chat-message ${type}`;
+  div.textContent = text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function sendChatMessage() {
+  const input = document.getElementById("chatInput");
+  if (!input) return;
+
+  const message = input.value.trim();
+  if (!message) return;
+
+  appendChatMessage(message, "user");
+  input.value = "";
+
+  const reply = getBotReply(message);
+
+  setTimeout(() => {
+    appendChatMessage(reply, "bot");
+  }, 300);
 }
 
 // Logout
