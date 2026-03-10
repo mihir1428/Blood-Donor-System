@@ -1,23 +1,27 @@
-const mysql = require("mysql2");
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
 
-const db = mysql.createPool({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: Number(process.env.MYSQLPORT),
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+const userRoutes = require("./routes/userRoutes");
+const donorRoutes = require("./routes/donorRoutes");
+const requestRoutes = require("./routes/requestRoutes");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/users", userRoutes);
+app.use("/api/donors", donorRoutes);
+app.use("/api/requests", requestRoutes);
+
+app.use(express.static(path.join(__dirname, "../Frontend")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Frontend/index.html"));
 });
 
-db.getConnection((err, connection) => {
-  if (err) {
-    console.log("MySQL pool error:", err);
-  } else {
-    console.log("MySQL Pool Connected");
-    connection.release();
-  }
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = db;
