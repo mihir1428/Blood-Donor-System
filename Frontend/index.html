@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Blood Donor System</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Donor System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="navbar">
-<h2>Blood Donor System</h2>
+  <div class="container">
 
-<div>
-<a href="login.html">Login</a>
-<a href="register.html">Register</a>
-</div>
-</div>
+    <div class="header">
+      <h1>Blood Donor System</h1>
 
-<div class="container">
+      <div class="auth-buttons">
+        <a href="login.html" class="login-btn">Login</a>
+        <a href="register.html" class="register-btn">Register</a>
+      </div>
+    </div>
 
-<div class="card">
-<h2>Find Blood Donor</h2>
+    <div class="card">
+      <h2>Find Blood Donor</h2>
 
-<form>
+      <form>
+        <label for="bloodGroup">Blood Group</label>
+        <select id="bloodGroup">
+          <option>A+</option>
+          <option>B+</option>
+          <option>O+</option>
+          <option>AB+</option>
+        </select>
 
-<label>Blood Group</label>
-<select>
-<option>A+</option>
-<option>B+</option>
-<option>O+</option>
-<option>AB+</option>
-</select>
+        <label for="location">Location</label>
+        <input type="text" id="location" placeholder="Enter city">
 
-<label>Location</label>
-<input type="text" placeholder="Enter city">
+        <button type="submit">Search Donor</button>
+      </form>
+    </div>
 
-<button>Search Donor</button>
+  </div>
 
-</form>
-</div>
-
-</div>
-
+  <script src="script.js"></script>
 </body>
 </html>
