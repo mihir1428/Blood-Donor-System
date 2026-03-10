@@ -6,19 +6,27 @@ const db = require("../db");
 router.post("/add", (req, res) => {
   const { requester_name, requester_email, blood_group, location, priority, status } = req.body;
 
+  if (!blood_group || !location || !priority) {
+    return res.status(400).send("All fields are required");
+  }
+
   const sql = `
     INSERT INTO requests (requester_name, requester_email, blood_group, location, priority, status)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(sql, [requester_name, requester_email, blood_group, location, priority, status], (err) => {
-    if (err) {
-      console.log("Request add error:", err);
-      return res.status(500).send("Request creation failed");
-    }
+  db.query(
+    sql,
+    [requester_name || "", requester_email || "", blood_group, location, priority, status || "pending"],
+    (err) => {
+      if (err) {
+        console.log("Request add error:", err);
+        return res.status(500).send("Request creation failed");
+      }
 
-    res.send("Request Created Successfully");
-  });
+      res.send("Request Created Successfully");
+    }
+  );
 });
 
 // Get all requests
