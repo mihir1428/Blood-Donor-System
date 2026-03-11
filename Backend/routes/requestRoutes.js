@@ -14,7 +14,7 @@ router.post("/add", (req, res) => {
     status
   } = req.body;
 
-  if (!blood_group || !location || !priority || !requester_phone) {
+  if (!blood_group || !location || !priority || !requester_phone || !requester_email) {
     return res.status(400).send("All fields are required");
   }
 
