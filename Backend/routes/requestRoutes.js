@@ -4,20 +4,44 @@ const db = require("../db");
 
 // Create request
 router.post("/add", (req, res) => {
-  const { requester_name, requester_email, blood_group, location, priority, status } = req.body;
+  const {
+    requester_name,
+    requester_email,
+    requester_phone,
+    blood_group,
+    location,
+    priority,
+    status
+  } = req.body;
 
-  if (!blood_group || !location || !priority) {
+  if (!blood_group || !location || !priority || !requester_phone) {
     return res.status(400).send("All fields are required");
   }
 
   const sql = `
-    INSERT INTO requests (requester_name, requester_email, blood_group, location, priority, status)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO requests (
+      requester_name,
+      requester_email,
+      requester_phone,
+      blood_group,
+      location,
+      priority,
+      status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.query(
     sql,
-    [requester_name || "", requester_email || "", blood_group, location, priority, status || "pending"],
+    [
+      requester_name || "",
+      requester_email || "",
+      requester_phone || "",
+      blood_group,
+      location,
+      priority,
+      status || "pending"
+    ],
     (err) => {
       if (err) {
         console.log("Request add error:", err);
