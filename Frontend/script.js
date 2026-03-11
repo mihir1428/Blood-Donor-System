@@ -7,6 +7,13 @@ function formatDate(value) {
   return d.toISOString().split("T")[0];
 }
 
+function formatDateTime(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString();
+}
+
 function getEligibilityClass(text) {
   if (!text) return "status-unavailable";
   return text.toLowerCase().includes("eligible")
@@ -536,6 +543,76 @@ async function updateAvailability() {
   }
 }
 
+// Load all users
+async function loadAllUsers() {
+  try {
+    const res = await fetch(`${API}/users`);
+    const users = await res.json();
+
+    let html = "";
+
+    if (!users.length) {
+      html = `<tr><td colspan="7">No users found</td></tr>`;
+    } else {
+      users.forEach((user) => {
+        html += `
+          <tr>
+            <td>${user.id || ""}</td>
+            <td>${user.name || ""}</td>
+            <td>${user.email || ""}</td>
+            <td>${user.phone || ""}</td>
+            <td>${user.role || ""}</td>
+            <td>${formatDateTime(user.created_at)}</td>
+            <td>
+              <button class="delete-btn" onclick="deleteUser(${user.id}, '${user.role}')">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    const allUsersTable = document.getElementById("allUsersTable");
+    if (allUsersTable) allUsersTable.innerHTML = html;
+  } catch (error) {
+    console.error("Load all users error:", error);
+  }
+}
+
+// Delete user
+async function deleteUser(userId, role) {
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
+  if (currentUser && currentUser.id === userId) {
+    alert("You cannot delete your own admin account while logged in.");
+    return;
+  }
+
+  const ok = confirm(`Are you sure you want to delete this ${role} user?`);
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`${API}/users/delete/${userId}`, {
+      method: "DELETE"
+    });
+
+    const data = await res.text();
+
+    if (!res.ok) {
+      alert(data || "Delete failed");
+      return;
+    }
+
+    alert(data);
+    loadAllUsers();
+    loadAdminDonors();
+    loadRequests();
+    loadDashboard();
+  } catch (error) {
+    console.error("Delete user error:", error);
+    alert("Delete failed");
+  }
+}
+
 // Admin donor list
 async function loadAdminDonors() {
   try {
@@ -591,6 +668,7 @@ async function deleteDonor(userId) {
     }
 
     alert(data);
+    loadAllUsers();
     loadAdminDonors();
   } catch (error) {
     console.error("Delete donor error:", error);
