@@ -772,4 +772,4 @@ function sendChatMessage() {
 function logoutUser() {
   localStorage.removeItem("user");
   window.location.href = "login.html";
-} এটা ঠিক আছে? সন্দেহ হলে বিশ্লেষণ করতে পারি.
+}
