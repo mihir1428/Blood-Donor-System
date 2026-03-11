@@ -146,6 +146,7 @@ select {
   font-size: 16px;
   outline: none;
   transition: 0.3s ease;
+  background: #fff;
 }
 
 input:focus,
@@ -358,11 +359,6 @@ table th {
   font-weight: 600;
 }
 
-.emergency-row {
-  background: #ffd6d6;
-  font-weight: bold;
-}
-
 .status-available {
   color: green;
   font-weight: bold;
@@ -381,6 +377,136 @@ table th {
   display: block;
 }
 
+/* Request row colors */
+.approved-row {
+  background: #e7f8ec;
+}
+
+.rejected-row {
+  background: #fdeaea;
+}
+
+.emergency-row {
+  background: #fff1f1;
+}
+
+/* Badges */
+.priority-badge,
+.status-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.priority-emergency {
+  background: #ffe1e1;
+  color: #c1121f;
+}
+
+.priority-normal {
+  background: #eef2f7;
+  color: #334155;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Action buttons */
+.action-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.approve-btn,
+.reject-btn,
+.delete-btn {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+}
+
+.approve-btn {
+  background: #16a34a;
+}
+
+.approve-btn:hover {
+  background: #15803d;
+}
+
+.reject-btn {
+  background: #f59e0b;
+}
+
+.reject-btn:hover {
+  background: #d97706;
+}
+
+.delete-btn {
+  background: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+/* Legend */
+.request-legend {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.legend {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.legend.emergency {
+  background: #fff1f1;
+  color: #c1121f;
+}
+
+.legend.approved {
+  background: #e7f8ec;
+  color: #166534;
+}
+
+.legend.rejected {
+  background: #fdeaea;
+  color: #991b1b;
+}
+
+.legend.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Responsive */
 @media (max-width: 1100px) {
   .blood-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -437,5 +563,9 @@ table th {
   .hero-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .action-btn-group {
+    flex-direction: column;
   }
 }
