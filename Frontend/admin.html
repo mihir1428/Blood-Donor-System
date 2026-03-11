@@ -12,6 +12,26 @@
         <button type="button" onclick="logoutUser()">Logout</button>
       </div>
 
+      <h3>All Users</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Created At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="allUsersTable"></tbody>
+        </table>
+      </div>
+
+      <br><br>
+
       <h3>Manage Donors</h3>
       <div class="table-wrap">
         <table>
@@ -71,6 +91,8 @@
     if (!user || user.role !== "admin") {
       window.location.href = "login.html";
     }
+
+    loadAllUsers();
     loadAdminDonors();
     loadRequests();
   </script>
