@@ -9,7 +9,9 @@ function formatDate(value) {
 
 function getEligibilityClass(text) {
   if (!text) return "status-unavailable";
-  return text.toLowerCase().includes("eligible") ? "status-available" : "status-unavailable";
+  return text.toLowerCase().includes("eligible")
+    ? "status-available"
+    : "status-unavailable";
 }
 
 function donorRowTemplate(donor) {
@@ -21,7 +23,9 @@ function donorRowTemplate(donor) {
       <td>${donor.phone || ""}</td>
       <td>${donor.email || ""}</td>
       <td>${formatDate(donor.last_donation)}</td>
-      <td class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || ""}</td>
+      <td class="${getEligibilityClass(donor.eligibility_text)}">
+        ${donor.eligibility_text || ""}
+      </td>
       <td class="${donor.availability ? "status-available" : "status-unavailable"}">
         ${donor.availability ? "Available" : "Not Available"}
       </td>
@@ -40,8 +44,16 @@ function donorResultCard(donor) {
       <p><strong>Phone:</strong> ${donor.phone || ""}</p>
       <p><strong>Email:</strong> ${donor.email || ""}</p>
       <p><strong>Last Donation:</strong> ${formatDate(donor.last_donation)}</p>
-      <p><strong>Eligibility:</strong> <span class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || ""}</span></p>
-      <p><strong>Status:</strong> <span class="${donor.availability ? "status-available" : "status-unavailable"}">${donor.availability ? "Available" : "Not Available"}</span></p>
+      <p><strong>Eligibility:</strong>
+        <span class="${getEligibilityClass(donor.eligibility_text)}">
+          ${donor.eligibility_text || ""}
+        </span>
+      </p>
+      <p><strong>Status:</strong>
+        <span class="${donor.availability ? "status-available" : "status-unavailable"}">
+          ${donor.availability ? "Available" : "Not Available"}
+        </span>
+      </p>
     </div>
   `;
 }
@@ -52,14 +64,17 @@ async function registerUser() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const role = document.getElementById("role").value;
+
+  const phone = document.getElementById("phone")
+    ? document.getElementById("phone").value.trim()
+    : "";
+
   const blood_group = document.getElementById("blood_group")
     ? document.getElementById("blood_group").value.trim()
     : "";
+
   const location = document.getElementById("location")
     ? document.getElementById("location").value.trim()
-    : "";
-  const phone = document.getElementById("phone")
-    ? document.getElementById("phone").value.trim()
     : "";
 
   try {
@@ -166,7 +181,7 @@ async function loadDashboard() {
   }
 }
 
-// Blood group counts for dashboard
+// Blood group counts
 async function loadBloodGroupCounts() {
   try {
     const res = await fetch(`${API}/donors/group-counts`);
@@ -215,7 +230,7 @@ async function loadDonors() {
   }
 }
 
-// Search donors list page
+// Search donors page
 async function searchDonors() {
   const bloodGroup = document.getElementById("searchBloodGroup")
     ? document.getElementById("searchBloodGroup").value.trim()
@@ -327,7 +342,8 @@ async function createRequest() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const requester_name = user ? user.name : "";
-  const requester_email = user ? user.email : "";
+  const requester_email =
+    document.getElementById("requestEmail").value.trim() || (user ? user.email : "");
 
   const blood_group = document.getElementById("requestBloodGroup").value.trim();
   const location = document.getElementById("requestLocation").value.trim();
@@ -366,7 +382,7 @@ async function createRequest() {
   }
 }
 
-// Load donor self profile
+// Load donor profile
 async function loadDonorProfile() {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) return;
@@ -392,7 +408,9 @@ async function loadDonorProfile() {
     if (location) location.value = donor.location || "";
     if (phone) phone.value = donor.phone || "";
     if (lastDonation) {
-      lastDonation.value = donor.last_donation ? String(donor.last_donation).split("T")[0] : "";
+      lastDonation.value = donor.last_donation
+        ? String(donor.last_donation).split("T")[0]
+        : "";
     }
     if (availability) availability.value = donor.availability ? "1" : "0";
 
@@ -538,7 +556,7 @@ async function deleteDonor(userId) {
   }
 }
 
-// Load all requests
+// Load requests
 async function loadRequests() {
   try {
     const res = await fetch(`${API}/requests`);
@@ -570,7 +588,7 @@ async function loadRequests() {
   }
 }
 
-// Simple assistant chat
+// Chatbot
 function getBotReply(message) {
   const text = message.toLowerCase().trim();
 
