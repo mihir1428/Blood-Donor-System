@@ -331,6 +331,7 @@ async function createRequest() {
 
   const blood_group = document.getElementById("requestBloodGroup").value.trim();
   const location = document.getElementById("requestLocation").value.trim();
+  const requester_phone = document.getElementById("requestPhone").value.trim();
   const priority = document.getElementById("requestPriority").value;
 
   try {
@@ -342,6 +343,7 @@ async function createRequest() {
       body: JSON.stringify({
         requester_name,
         requester_email,
+        requester_phone,
         blood_group,
         location,
         priority,
@@ -552,6 +554,7 @@ async function loadRequests() {
           <td>${request.id || ""}</td>
           <td>${request.requester_name || ""}</td>
           <td>${request.requester_email || ""}</td>
+          <td>${request.requester_phone || ""}</td>
           <td>${request.blood_group || ""}</td>
           <td>${request.location || ""}</td>
           <td>${request.priority || ""}</td>
@@ -599,7 +602,7 @@ function getBotReply(message) {
     return "You can find blood donors by selecting a blood group and district, then applying availability or emergency filters.";
   }
 
-  return "Ami Sumaiya.Ekhane Amar Sathe Message kor,Sudhu Mahir ";
+  return "Hello! I am the Blood Donor System assistant. Ask me about donor search, emergency blood requests, eligibility, districts, or dashboard features.";
 }
 
 function appendChatMessage(text, type) {
