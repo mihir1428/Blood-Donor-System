@@ -6,7 +6,7 @@ const db = require("../db");
 router.post("/register", (req, res) => {
   const { name, email, password, role, blood_group, location, phone } = req.body;
 
-  if (!name || !email || !password || !role) {
+  if (!name || !email || !password || !role || !phone) {
     return res.status(400).send("All required fields must be filled");
   }
 
@@ -51,7 +51,7 @@ router.post("/register", (req, res) => {
           }
         );
       } else {
-        return res.send("User Registered Successfully");
+        return res.send("Requester Registered Successfully");
       }
     });
   });
