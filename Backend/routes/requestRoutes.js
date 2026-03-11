@@ -1,124 +1,127 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Request Blood</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <h2>Blood Request Form</h2>
+const express = require("express");
+const router = express.Router();
+const db = require("../db");
 
-      <form onsubmit="createRequest(); return false;">
-        <input type="text" id="requestName" placeholder="Requester Name" required>
+// CREATE BLOOD REQUEST
+router.post("/add", (req, res) => {
+  const {
+    requester_name,
+    requester_email,
+    phone,
+    blood_group,
+    location,
+    priority
+  } = req.body;
 
-        <select id="requestBloodGroup" required>
-          <option value="">Select Blood Group</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-        </select>
+  if (!requester_name || !requester_email || !phone || !blood_group || !location || !priority) {
+    return res.status(400).send("All fields are required");
+  }
 
-        <select id="requestLocation" required>
-          <option value="">Select District</option>
-          <option value="Bagerhat">Bagerhat</option>
-          <option value="Bandarban">Bandarban</option>
-          <option value="Barguna">Barguna</option>
-          <option value="Barishal">Barishal</option>
-          <option value="Bhola">Bhola</option>
-          <option value="Bogura">Bogura</option>
-          <option value="Brahmanbaria">Brahmanbaria</option>
-          <option value="Chandpur">Chandpur</option>
-          <option value="Chattogram">Chattogram</option>
-          <option value="Chuadanga">Chuadanga</option>
-          <option value="Cox's Bazar">Cox's Bazar</option>
-          <option value="Cumilla">Cumilla</option>
-          <option value="Dhaka">Dhaka</option>
-          <option value="Dinajpur">Dinajpur</option>
-          <option value="Faridpur">Faridpur</option>
-          <option value="Feni">Feni</option>
-          <option value="Gaibandha">Gaibandha</option>
-          <option value="Gazipur">Gazipur</option>
-          <option value="Gopalganj">Gopalganj</option>
-          <option value="Habiganj">Habiganj</option>
-          <option value="Jamalpur">Jamalpur</option>
-          <option value="Jashore">Jashore</option>
-          <option value="Jhalokathi">Jhalokathi</option>
-          <option value="Jhenaidah">Jhenaidah</option>
-          <option value="Joypurhat">Joypurhat</option>
-          <option value="Khagrachari">Khagrachari</option>
-          <option value="Khulna">Khulna</option>
-          <option value="Kishoreganj">Kishoreganj</option>
-          <option value="Kurigram">Kurigram</option>
-          <option value="Kushtia">Kushtia</option>
-          <option value="Lakshmipur">Lakshmipur</option>
-          <option value="Lalmonirhat">Lalmonirhat</option>
-          <option value="Madaripur">Madaripur</option>
-          <option value="Magura">Magura</option>
-          <option value="Manikganj">Manikganj</option>
-          <option value="Meherpur">Meherpur</option>
-          <option value="Moulvibazar">Moulvibazar</option>
-          <option value="Munshiganj">Munshiganj</option>
-          <option value="Mymensingh">Mymensingh</option>
-          <option value="Naogaon">Naogaon</option>
-          <option value="Narail">Narail</option>
-          <option value="Narayanganj">Narayanganj</option>
-          <option value="Narsingdi">Narsingdi</option>
-          <option value="Natore">Natore</option>
-          <option value="Netrokona">Netrokona</option>
-          <option value="Nilphamari">Nilphamari</option>
-          <option value="Noakhali">Noakhali</option>
-          <option value="Pabna">Pabna</option>
-          <option value="Panchagarh">Panchagarh</option>
-          <option value="Patuakhali">Patuakhali</option>
-          <option value="Pirojpur">Pirojpur</option>
-          <option value="Rajbari">Rajbari</option>
-          <option value="Rajshahi">Rajshahi</option>
-          <option value="Rangamati">Rangamati</option>
-          <option value="Rangpur">Rangpur</option>
-          <option value="Satkhira">Satkhira</option>
-          <option value="Shariatpur">Shariatpur</option>
-          <option value="Sherpur">Sherpur</option>
-          <option value="Sirajganj">Sirajganj</option>
-          <option value="Sunamganj">Sunamganj</option>
-          <option value="Sylhet">Sylhet</option>
-          <option value="Tangail">Tangail</option>
-          <option value="Thakurgaon">Thakurgaon</option>
-        </select>
+  const sql = `
+    INSERT INTO requests
+    (requester_name, requester_email, phone, blood_group, location, priority, status)
+    VALUES (?, ?, ?, ?, ?, ?, 'pending')
+  `;
 
-        <input type="text" id="requestPhone" placeholder="Requester Phone Number" required>
-        <input type="email" id="requestEmail" placeholder="Requester Email" required>
-
-        <select id="requestPriority" required>
-          <option value="">Select Priority</option>
-          <option value="normal">Normal</option>
-          <option value="emergency">Emergency</option>
-        </select>
-
-        <button type="submit">Submit Request</button>
-      </form>
-
-      <br>
-      <a href="dashboard.html"><button type="button">Back Dashboard</button></a>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-  <script>
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      if (document.getElementById("requestName")) {
-        document.getElementById("requestName").value = user.name || "";
+  db.query(
+    sql,
+    [requester_name, requester_email, phone, blood_group, location, priority],
+    (err, result) => {
+      if (err) {
+        console.log("Request add error:", err);
+        return res.status(500).send("Request creation failed");
       }
-      if (document.getElementById("requestEmail")) {
-        document.getElementById("requestEmail").value = user.email || "";
-      }
+
+      res.send("Request Created Successfully");
     }
-  </script>
-</body>
-</html>
+  );
+});
+
+// GET ALL REQUESTS
+router.get("/", (req, res) => {
+  const sql = "SELECT * FROM requests ORDER BY id DESC";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch requests error:", err);
+      return res.status(500).send("Failed to fetch requests");
+    }
+
+    res.json(result);
+  });
+});
+
+// UPDATE REQUEST STATUS
+router.put("/status/:id", (req, res) => {
+  const requestId = req.params.id;
+  const { status } = req.body;
+
+  if (!status || !["pending", "approved", "rejected"].includes(status)) {
+    return res.status(400).send("Invalid status");
+  }
+
+  const sql = "UPDATE requests SET status = ? WHERE id = ?";
+
+  db.query(sql, [status, requestId], (err, result) => {
+    if (err) {
+      console.log("Update request status error:", err);
+      return res.status(500).send("Status update failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
+    }
+
+    res.send("Request status updated successfully");
+  });
+});
+
+// DELETE REQUEST
+router.delete("/delete/:id", (req, res) => {
+  const requestId = req.params.id;
+
+  const sql = "DELETE FROM requests WHERE id = ?";
+
+  db.query(sql, [requestId], (err, result) => {
+    if (err) {
+      console.log("Delete request error:", err);
+      return res.status(500).send("Delete failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
+    }
+
+    res.send("Request deleted successfully");
+  });
+});
+
+// REQUEST COUNT
+router.get("/count", (req, res) => {
+  const sql = "SELECT COUNT(*) AS total FROM requests";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Request count error:", err);
+      return res.status(500).send("Count failed");
+    }
+
+    res.json(result[0]);
+  });
+});
+
+// EMERGENCY COUNT
+router.get("/emergency", (req, res) => {
+  const sql = "SELECT COUNT(*) AS total FROM requests WHERE priority = 'emergency'";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Emergency count error:", err);
+      return res.status(500).send("Emergency count failed");
+    }
+
+    res.json(result[0]);
+  });
+});
+
+module.exports = router;
