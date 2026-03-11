@@ -22,9 +22,9 @@ router.post("/register", (req, res) => {
       return res.status(400).send("Email already exists");
     }
 
-    const userSql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
+    const userSql = "INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)";
 
-    db.query(userSql, [name, email, password, role], (err, userResult) => {
+    db.query(userSql, [name, email, password, phone, role], (err, userResult) => {
       if (err) {
         console.log("Register user error:", err);
         return res.status(500).send("Registration failed");
@@ -34,13 +34,13 @@ router.post("/register", (req, res) => {
 
       if (role === "donor") {
         const donorSql = `
-          INSERT INTO donors (user_id, blood_group, location, phone, last_donation, availability)
-          VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO donors (user_id, name, email, blood_group, location, phone, last_donation, availability)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(
           donorSql,
-          [userId, blood_group || "", location || "", phone || "", null, 1],
+          [userId, name, email, blood_group || "", location || "", phone || "", null, 1],
           (donorErr) => {
             if (donorErr) {
               console.log("Register donor error:", donorErr);
@@ -70,6 +70,40 @@ router.post("/login", (req, res) => {
     }
 
     res.json(result);
+  });
+});
+
+// Get all users
+router.get("/", (req, res) => {
+  const sql = "SELECT * FROM users ORDER BY id DESC";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch users error:", err);
+      return res.status(500).send("Failed to fetch users");
+    }
+
+    res.json(result);
+  });
+});
+
+// Delete user
+router.delete("/delete/:id", (req, res) => {
+  const userId = req.params.id;
+
+  const sql = "DELETE FROM users WHERE id = ?";
+
+  db.query(sql, [userId], (err, result) => {
+    if (err) {
+      console.log("Delete user error:", err);
+      return res.status(500).send("Delete failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    res.send("User deleted successfully");
   });
 });
 
