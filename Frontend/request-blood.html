@@ -91,6 +91,8 @@
 
         <input type="text" id="requestPhone" placeholder="Requester Phone Number" required>
 
+        <input type="email" id="requestEmail" placeholder="Requester Email" required>
+
         <select id="requestPriority" required>
           <option value="">Select Priority</option>
           <option value="normal">Normal</option>
@@ -106,5 +108,12 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      const emailInput = document.getElementById("requestEmail");
+      if (emailInput && user.email) emailInput.value = user.email;
+    }
+  </script>
 </body>
 </html>
