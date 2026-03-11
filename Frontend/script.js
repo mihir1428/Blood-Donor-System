@@ -565,7 +565,15 @@ async function loadRequests() {
     let html = "";
 
     requests.forEach((request) => {
-      const rowClass = request.priority === "emergency" ? "emergency-row" : "";
+      let rowClass = "";
+
+      if (request.status === "approved") {
+        rowClass = "approved-row";
+      } else if (request.status === "rejected") {
+        rowClass = "rejected-row";
+      } else if (request.priority === "emergency") {
+        rowClass = "emergency-row";
+      }
 
       html += `
         <tr class="${rowClass}">
@@ -575,8 +583,23 @@ async function loadRequests() {
           <td>${request.requester_phone || ""}</td>
           <td>${request.blood_group || ""}</td>
           <td>${request.location || ""}</td>
-          <td>${request.priority || ""}</td>
-          <td>${request.status || ""}</td>
+          <td>
+            <span class="priority-badge ${request.priority === "emergency" ? "priority-emergency" : "priority-normal"}">
+              ${request.priority || ""}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge status-${request.status || "pending"}">
+              ${request.status || ""}
+            </span>
+          </td>
+          <td>
+            <div class="action-btn-group">
+              <button class="approve-btn" onclick="updateRequestStatus(${request.id}, 'approved')">Approve</button>
+              <button class="reject-btn" onclick="updateRequestStatus(${request.id}, 'rejected')">Reject</button>
+              <button class="delete-btn" onclick="deleteRequest(${request.id})">Delete</button>
+            </div>
+          </td>
         </tr>
       `;
     });
@@ -585,6 +608,59 @@ async function loadRequests() {
     if (requestTable) requestTable.innerHTML = html;
   } catch (error) {
     console.error("Load requests error:", error);
+  }
+}
+
+// Update request status
+async function updateRequestStatus(requestId, status) {
+  try {
+    const res = await fetch(`${API}/requests/status/${requestId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    });
+
+    const data = await res.text();
+
+    if (!res.ok) {
+      alert(data || "Status update failed");
+      return;
+    }
+
+    alert(data);
+    loadRequests();
+    loadDashboard();
+  } catch (error) {
+    console.error("Update request status error:", error);
+    alert("Status update failed");
+  }
+}
+
+// Delete request
+async function deleteRequest(requestId) {
+  const ok = confirm("Are you sure you want to delete this blood request?");
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`${API}/requests/delete/${requestId}`, {
+      method: "DELETE"
+    });
+
+    const data = await res.text();
+
+    if (!res.ok) {
+      alert(data || "Delete failed");
+      return;
+    }
+
+    alert(data);
+    loadRequests();
+    loadDashboard();
+  } catch (error) {
+    console.error("Delete request error:", error);
+    alert("Delete failed");
   }
 }
 
