@@ -271,11 +271,21 @@ async function searchDonors() {
 
 // Homepage donor search
 async function searchHomeDonors() {
-  const bloodGroup = document.getElementById("bloodGroup").value.trim();
-  const location = document.getElementById("location").value.trim();
-  const availability = document.getElementById("homeAvailability").value;
-  const emergency = document.getElementById("homeEmergency").value;
+  const bloodGroup = document.getElementById("bloodGroup")
+    ? document.getElementById("bloodGroup").value.trim()
+    : "";
+  const location = document.getElementById("location")
+    ? document.getElementById("location").value.trim()
+    : "";
+  const availability = document.getElementById("homeAvailability")
+    ? document.getElementById("homeAvailability").value
+    : "";
+  const emergency = document.getElementById("homeEmergency")
+    ? document.getElementById("homeEmergency").value
+    : "";
   const resultBox = document.getElementById("donorResults");
+
+  if (!resultBox) return;
 
   try {
     const query = new URLSearchParams({
@@ -308,11 +318,21 @@ async function searchHomeDonors() {
 
 // Dashboard donor search
 async function searchDashboardDonors() {
-  const bloodGroup = document.getElementById("dashboardBloodGroup").value.trim();
-  const location = document.getElementById("dashboardLocation").value.trim();
-  const availability = document.getElementById("dashboardAvailability").value;
-  const emergency = document.getElementById("dashboardEmergency").value;
+  const bloodGroup = document.getElementById("dashboardBloodGroup")
+    ? document.getElementById("dashboardBloodGroup").value.trim()
+    : "";
+  const location = document.getElementById("dashboardLocation")
+    ? document.getElementById("dashboardLocation").value.trim()
+    : "";
+  const availability = document.getElementById("dashboardAvailability")
+    ? document.getElementById("dashboardAvailability").value
+    : "";
+  const emergency = document.getElementById("dashboardEmergency")
+    ? document.getElementById("dashboardEmergency").value
+    : "";
   const resultBox = document.getElementById("dashboardDonorResults");
+
+  if (!resultBox) return;
 
   try {
     const query = new URLSearchParams({
@@ -341,14 +361,26 @@ async function searchDashboardDonors() {
 async function createRequest() {
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const requester_name = user ? user.name : "";
-  const requester_email =
-    document.getElementById("requestEmail").value.trim() || (user ? user.email : "");
+  const requester_name = document.getElementById("requestName")
+    ? document.getElementById("requestName").value.trim() || (user ? user.name : "")
+    : (user ? user.name : "");
 
-  const blood_group = document.getElementById("requestBloodGroup").value.trim();
-  const location = document.getElementById("requestLocation").value.trim();
-  const requester_phone = document.getElementById("requestPhone").value.trim();
-  const priority = document.getElementById("requestPriority").value;
+  const requester_email = document.getElementById("requestEmail")
+    ? document.getElementById("requestEmail").value.trim() || (user ? user.email : "")
+    : (user ? user.email : "");
+
+  const blood_group = document.getElementById("requestBloodGroup")
+    ? document.getElementById("requestBloodGroup").value.trim()
+    : "";
+  const location = document.getElementById("requestLocation")
+    ? document.getElementById("requestLocation").value.trim()
+    : "";
+  const phone = document.getElementById("requestPhone")
+    ? document.getElementById("requestPhone").value.trim()
+    : "";
+  const priority = document.getElementById("requestPriority")
+    ? document.getElementById("requestPriority").value
+    : "";
 
   try {
     const res = await fetch(`${API}/requests/add`, {
@@ -359,11 +391,10 @@ async function createRequest() {
       body: JSON.stringify({
         requester_name,
         requester_email,
-        requester_phone,
+        phone,
         blood_group,
         location,
-        priority,
-        status: "pending"
+        priority
       })
     });
 
@@ -428,10 +459,18 @@ async function updateDonorProfile() {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) return;
 
-  const blood_group = document.getElementById("blood_group").value.trim();
-  const location = document.getElementById("location").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const last_donation = document.getElementById("last_donation").value;
+  const blood_group = document.getElementById("blood_group")
+    ? document.getElementById("blood_group").value.trim()
+    : "";
+  const location = document.getElementById("location")
+    ? document.getElementById("location").value.trim()
+    : "";
+  const phone = document.getElementById("phone")
+    ? document.getElementById("phone").value.trim()
+    : "";
+  const last_donation = document.getElementById("last_donation")
+    ? document.getElementById("last_donation").value
+    : "";
 
   try {
     const res = await fetch(`${API}/donors/update/${user.id}`, {
@@ -467,7 +506,9 @@ async function updateAvailability() {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) return;
 
-  const availability = document.getElementById("availability").value;
+  const availability = document.getElementById("availability")
+    ? document.getElementById("availability").value
+    : "1";
 
   try {
     const res = await fetch(`${API}/donors/availability/${user.id}`, {
@@ -580,7 +621,7 @@ async function loadRequests() {
           <td>${request.id || ""}</td>
           <td>${request.requester_name || ""}</td>
           <td>${request.requester_email || ""}</td>
-          <td>${request.requester_phone || ""}</td>
+          <td>${request.phone || ""}</td>
           <td>${request.blood_group || ""}</td>
           <td>${request.location || ""}</td>
           <td>
@@ -731,4 +772,4 @@ function sendChatMessage() {
 function logoutUser() {
   localStorage.removeItem("user");
   window.location.href = "login.html";
-}
+} এটা ঠিক আছে? সন্দেহ হলে বিশ্লেষণ করতে পারি.
