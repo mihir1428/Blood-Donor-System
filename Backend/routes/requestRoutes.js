@@ -67,6 +67,51 @@ router.get("/", (req, res) => {
   });
 });
 
+// Update request status
+router.put("/status/:id", (req, res) => {
+  const requestId = req.params.id;
+  const { status } = req.body;
+
+  if (!status || !["pending", "approved", "rejected"].includes(status)) {
+    return res.status(400).send("Invalid status");
+  }
+
+  const sql = "UPDATE requests SET status = ? WHERE id = ?";
+
+  db.query(sql, [status, requestId], (err, result) => {
+    if (err) {
+      console.log("Update request status error:", err);
+      return res.status(500).send("Status update failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
+    }
+
+    res.send("Request status updated successfully");
+  });
+});
+
+// Delete request
+router.delete("/delete/:id", (req, res) => {
+  const requestId = req.params.id;
+
+  const sql = "DELETE FROM requests WHERE id = ?";
+
+  db.query(sql, [requestId], (err, result) => {
+    if (err) {
+      console.log("Delete request error:", err);
+      return res.status(500).send("Delete failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
+    }
+
+    res.send("Request deleted successfully");
+  });
+});
+
 // Count requests
 router.get("/count", (req, res) => {
   const sql = "SELECT COUNT(*) AS total FROM requests";
