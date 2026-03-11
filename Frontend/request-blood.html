@@ -10,6 +10,8 @@
       <h2>Blood Request Form</h2>
 
       <form onsubmit="createRequest(); return false;">
+        <input type="text" id="requestName" placeholder="Requester Name" required>
+
         <select id="requestBloodGroup" required>
           <option value="">Select Blood Group</option>
           <option value="A+">A+</option>
@@ -90,7 +92,6 @@
         </select>
 
         <input type="text" id="requestPhone" placeholder="Requester Phone Number" required>
-
         <input type="email" id="requestEmail" placeholder="Requester Email" required>
 
         <select id="requestPriority" required>
@@ -111,8 +112,12 @@
   <script>
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      const emailInput = document.getElementById("requestEmail");
-      if (emailInput && user.email) emailInput.value = user.email;
+      if (document.getElementById("requestName")) {
+        document.getElementById("requestName").value = user.name || "";
+      }
+      if (document.getElementById("requestEmail")) {
+        document.getElementById("requestEmail").value = user.email || "";
+      }
     }
   </script>
 </body>
