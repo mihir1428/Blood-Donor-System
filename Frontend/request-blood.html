@@ -1,20 +1,17 @@
-<script>
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user) {
-    if (document.getElementById("requestName")) {
-      document.getElementById("requestName").value = user.name || "";
-    }
-    if (document.getElementById("requestEmail")) {
-      document.getElementById("requestEmail").value = user.email || "";
-    }
-    if (document.getElementById("requestBloodGroup")) {
-      document.getElementById("requestBloodGroup").value = user.blood_group || "";
-    }
-    if (document.getElementById("requestLocation")) {
-      document.getElementById("requestLocation").value = user.location || "";
-    }
-    if (document.getElementById("requestPhone")) {
-      document.getElementById("requestPhone").value = user.phone || "";
-    }
-  }
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Request Blood</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="dashboard-header-row">
+        <div>
+          <h2>Patient Blood Request</h2>
+          <p class="muted-text">Fill in the patient information to request blood.</p>
+        </div>
+        <div class="top-actions">
+          <a href="dashboard.html"><button type="button">Back Dashboard</button></a>
+        </div
