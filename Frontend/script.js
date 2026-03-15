@@ -172,7 +172,7 @@ async function loginUser() {
   }
 }
 
-// Requester dashboard stats
+// Patient dashboard stats
 async function loadDashboard() {
   try {
     const donorRes = await fetch(`${API}/donors/count`);
@@ -329,7 +329,7 @@ async function searchHomeDonors() {
   }
 }
 
-// Dashboard donor search
+// Patient dashboard donor search
 async function searchDashboardDonors() {
   const bloodGroup = document.getElementById("dashboardBloodGroup")
     ? document.getElementById("dashboardBloodGroup").value.trim()
@@ -370,7 +370,7 @@ async function searchDashboardDonors() {
   }
 }
 
-// Matched donors for requester dashboard
+// Matched donors for patient dashboard
 async function loadRequesterMatchedDonors() {
   const user = JSON.parse(localStorage.getItem("user"));
   const tableBody = document.getElementById("matchedDonorTableBody");
@@ -394,8 +394,8 @@ async function loadRequesterMatchedDonors() {
 
     if (infoBox) {
       infoBox.innerText =
-        `Your blood group: ${data.requester?.blood_group || "N/A"} | ` +
-        `Your location: ${data.requester?.location || "N/A"} | ` +
+        `Your blood group: ${data.patient?.blood_group || data.requester?.blood_group || "N/A"} | ` +
+        `Your location: ${data.patient?.location || data.requester?.location || "N/A"} | ` +
         `Compatible donor groups: ${(data.compatible_groups || []).join(", ")}`;
     }
 
@@ -432,10 +432,72 @@ async function loadRequesterMatchedDonors() {
   }
 }
 
+// Donor dashboard: all pending emergency notifications
+async function loadDonorEmergencyNotifications() {
+  const badge = document.getElementById("notificationBadge");
+  const listBox = document.getElementById("emergencyNotificationList");
+
+  try {
+    const res = await fetch(`${API}/requests/all-emergency`);
+
+    if (!res.ok) {
+      if (badge) badge.style.display = "none";
+      if (listBox) {
+        listBox.innerHTML = "<p style='color:red;'>Failed to load emergency notifications.</p>";
+      }
+      return;
+    }
+
+    const requests = await res.json();
+
+    if (badge) {
+      if (requests.length > 0) {
+        badge.style.display = "inline-block";
+        badge.innerText = requests.length;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    if (listBox) {
+      if (!requests.length) {
+        listBox.innerHTML = "<p>No emergency notification</p>";
+      } else {
+        listBox.innerHTML = requests.map((request) => `
+          <div class="result-card" style="margin-bottom:12px;">
+            <h4>${request.requester_name || "Unknown Patient"}</h4>
+            <p><strong>Blood Group:</strong> ${request.blood_group || "-"}</p>
+            <p><strong>Location:</strong> ${request.location || "-"}</p>
+            <p><strong>Phone:</strong> ${request.phone || "-"}</p>
+            <p><strong>Email:</strong> ${request.requester_email || "-"}</p>
+            <p><strong>Priority:</strong> ${request.priority || "-"}</p>
+            <p><strong>Status:</strong> ${request.status || "-"}</p>
+          </div>
+        `).join("");
+      }
+    }
+  } catch (error) {
+    console.error("Emergency notification error:", error);
+    if (badge) badge.style.display = "none";
+    if (listBox) {
+      listBox.innerHTML = "<p style='color:red;'>Error loading emergency notifications.</p>";
+    }
+  }
+}
+
+function toggleEmergencyPanel() {
+  const panel = document.getElementById("emergencyNotificationPanel");
+  if (!panel) return;
+
+  if (panel.style.display === "none" || panel.style.display === "") {
+    panel.style.display = "block";
+  } else {
+    panel.style.display = "none";
+  }
+}
+
 // Create request
 async function createRequest() {
-  const user = JSON.parse(localStorage.getItem("user"));
-
   const requester_name = document.getElementById("requestName")
     ? document.getElementById("requestName").value.trim()
     : "";
@@ -869,7 +931,7 @@ function getBotReply(message) {
   }
 
   if (text.includes("compatible") || text.includes("compatibility") || text.includes("which blood")) {
-    return "The system checks blood compatibility first. For example, an A+ requester can receive from A+, A-, O+, and O-. Then it prioritizes same district, available status, and eligibility.";
+    return "The system checks blood compatibility first. For example, an A+ patient can receive from A+, A-, O+, and O-. Then it prioritizes same district, available status, and eligibility.";
   }
 
   if (text.includes("emergency")) {
@@ -893,7 +955,7 @@ function getBotReply(message) {
   }
 
   if (text.includes("dashboard")) {
-    return "The requester dashboard shows total donors, total requests, emergency requests, blood-group summary, matched donors, donor search, and assistant help.";
+    return "The patient dashboard shows total donors, total requests, emergency requests, blood-group summary, matched donors, donor search, and assistant help.";
   }
 
   if (text.includes("request")) {
