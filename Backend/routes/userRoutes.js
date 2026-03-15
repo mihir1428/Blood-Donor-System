@@ -10,6 +10,10 @@ router.post("/register", (req, res) => {
     return res.status(400).send("All required fields must be filled");
   }
 
+  if ((role === "donor" || role === "requester") && (!blood_group || !location)) {
+    return res.status(400).send("Blood group and location are required");
+  }
+
   const checkSql = "SELECT id FROM users WHERE email = ?";
 
   db.query(checkSql, [email], (checkErr, checkResult) => {
@@ -22,38 +26,45 @@ router.post("/register", (req, res) => {
       return res.status(400).send("Email already exists");
     }
 
-    const userSql = "INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)";
+    const userSql = `
+      INSERT INTO users (name, email, password, phone, role, blood_group, location)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    db.query(userSql, [name, email, password, phone, role], (err, userResult) => {
-      if (err) {
-        console.log("Register user error:", err);
-        return res.status(500).send("Registration failed");
-      }
+    db.query(
+      userSql,
+      [name, email, password, phone, role, blood_group || "", location || ""],
+      (err, userResult) => {
+        if (err) {
+          console.log("Register user error:", err);
+          return res.status(500).send("Registration failed");
+        }
 
-      const userId = userResult.insertId;
+        const userId = userResult.insertId;
 
-      if (role === "donor") {
-        const donorSql = `
-          INSERT INTO donors (user_id, name, email, blood_group, location, phone, last_donation, availability)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+        if (role === "donor") {
+          const donorSql = `
+            INSERT INTO donors (user_id, name, email, blood_group, location, phone, last_donation, availability)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `;
 
-        db.query(
-          donorSql,
-          [userId, name, email, blood_group || "", location || "", phone || "", null, 1],
-          (donorErr) => {
-            if (donorErr) {
-              console.log("Register donor error:", donorErr);
-              return res.status(500).send("Donor registration failed");
+          db.query(
+            donorSql,
+            [userId, name, email, blood_group || "", location || "", phone || "", null, 1],
+            (donorErr) => {
+              if (donorErr) {
+                console.log("Register donor error:", donorErr);
+                return res.status(500).send("Donor registration failed");
+              }
+
+              return res.send("Donor Registered Successfully");
             }
-
-            return res.send("Donor Registered Successfully");
-          }
-        );
-      } else {
-        return res.send("Requester Registered Successfully");
+          );
+        } else {
+          return res.send("Requester Registered Successfully");
+        }
       }
-    });
+    );
   });
 });
 
@@ -66,7 +77,11 @@ router.post("/login", (req, res) => {
   db.query(sql, [email, password], (err, result) => {
     if (err) {
       console.log("Login error:", err);
-      return res.status(500).json({ message: "Login failed" });
+      return res.status(500).send("Login failed");
+    }
+
+    if (!result.length) {
+      return res.status(401).send("Invalid email or password");
     }
 
     res.json(result);
