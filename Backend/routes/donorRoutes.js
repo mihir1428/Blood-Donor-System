@@ -37,6 +37,21 @@ function mapDonor(donor) {
   };
 }
 
+function getCompatibleDonorGroups(recipientBloodGroup) {
+  const compatibility = {
+    "O-": ["O-"],
+    "O+": ["O+", "O-"],
+    "A-": ["A-", "O-"],
+    "A+": ["A+", "A-", "O+", "O-"],
+    "B-": ["B-", "O-"],
+    "B+": ["B+", "B-", "O+", "O-"],
+    "AB-": ["AB-", "A-", "B-", "O-"],
+    "AB+": ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"]
+  };
+
+  return compatibility[recipientBloodGroup] || [];
+}
+
 // Get all donors
 router.get("/", (req, res) => {
   const sql = `
@@ -58,7 +73,7 @@ router.get("/", (req, res) => {
   });
 });
 
-// Blood-group wise count for dashboard cards
+// Blood-group wise count
 router.get("/group-counts", (req, res) => {
   const sql = `
     SELECT blood_group, COUNT(*) AS total
@@ -134,13 +149,111 @@ router.get("/search", (req, res) => {
 
     if (emergency === "1") {
       donors = donors.sort((a, b) => {
-        if (a.available !== b.available) return b.available - a.available;
+        if (a.availability !== b.availability) return Number(b.availability) - Number(a.availability);
         if (a.eligible !== b.eligible) return Number(b.eligible) - Number(a.eligible);
         return 0;
       });
     }
 
     res.json(donors);
+  });
+});
+
+// Smart match for requester dashboard
+router.get("/smart-match/:user_id", (req, res) => {
+  const userId = req.params.user_id;
+
+  const userSql = "SELECT id, name, role, blood_group, location FROM users WHERE id = ?";
+
+  db.query(userSql, [userId], (userErr, userResult) => {
+    if (userErr) {
+      console.log("Fetch requester error:", userErr);
+      return res.status(500).send("Failed to load requester profile");
+    }
+
+    if (!userResult.length) {
+      return res.status(404).send("Requester not found");
+    }
+
+    const requester = userResult[0];
+    const compatibleGroups = getCompatibleDonorGroups(requester.blood_group);
+
+    if (!compatibleGroups.length) {
+      return res.json({
+        requester: {
+          id: requester.id,
+          blood_group: requester.blood_group,
+          location: requester.location
+        },
+        compatible_groups: [],
+        donors: []
+      });
+    }
+
+    const placeholders = compatibleGroups.map(() => "?").join(",");
+
+    const donorSql = `
+      SELECT donors.id, donors.user_id, users.name, users.email,
+             donors.blood_group, donors.location, donors.phone,
+             donors.last_donation, donors.availability
+      FROM donors
+      JOIN users ON donors.user_id = users.id
+      WHERE donors.blood_group IN (${placeholders})
+      ORDER BY donors.id DESC
+    `;
+
+    db.query(donorSql, compatibleGroups, (donorErr, donorResult) => {
+      if (donorErr) {
+        console.log("Smart match error:", donorErr);
+        return res.status(500).send("Smart donor match failed");
+      }
+
+      let donors = donorResult.map(mapDonor);
+
+      donors = donors.map((donor) => {
+        let score = 0;
+
+        if (
+          requester.location &&
+          donor.location &&
+          requester.location.toLowerCase().trim() === donor.location.toLowerCase().trim()
+        ) {
+          score += 50;
+        }
+
+        if (donor.availability) {
+          score += 30;
+        }
+
+        if (donor.eligible) {
+          score += 20;
+        }
+
+        if (donor.blood_group === requester.blood_group) {
+          score += 10;
+        }
+
+        return {
+          ...donor,
+          match_score: score
+        };
+      });
+
+      donors.sort((a, b) => {
+        if (b.match_score !== a.match_score) return b.match_score - a.match_score;
+        return b.id - a.id;
+      });
+
+      res.json({
+        requester: {
+          id: requester.id,
+          blood_group: requester.blood_group,
+          location: requester.location
+        },
+        compatible_groups: compatibleGroups,
+        donors
+      });
+    });
   });
 });
 
