@@ -437,25 +437,33 @@ async function createRequest() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const requester_name = document.getElementById("requestName")
-    ? document.getElementById("requestName").value.trim() || (user ? user.name : "")
-    : (user ? user.name : "");
+    ? document.getElementById("requestName").value.trim()
+    : "";
 
   const requester_email = document.getElementById("requestEmail")
-    ? document.getElementById("requestEmail").value.trim() || (user ? user.email : "")
-    : (user ? user.email : "");
+    ? document.getElementById("requestEmail").value.trim()
+    : "";
 
   const blood_group = document.getElementById("requestBloodGroup")
     ? document.getElementById("requestBloodGroup").value.trim()
     : "";
+
   const location = document.getElementById("requestLocation")
     ? document.getElementById("requestLocation").value.trim()
     : "";
+
   const phone = document.getElementById("requestPhone")
     ? document.getElementById("requestPhone").value.trim()
     : "";
+
   const priority = document.getElementById("requestPriority")
     ? document.getElementById("requestPriority").value
-    : "";
+    : "normal";
+
+  if (!requester_name || !requester_email || !phone || !blood_group || !location) {
+    alert("Please fill all fields");
+    return;
+  }
 
   try {
     const res = await fetch(`${API}/requests/add`, {
@@ -480,7 +488,7 @@ async function createRequest() {
       return;
     }
 
-    alert(data);
+    alert(data || "Blood request submitted successfully");
     window.location.href = "dashboard.html";
   } catch (error) {
     console.error("Request error:", error);
