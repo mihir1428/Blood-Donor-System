@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// CREATE BLOOD REQUEST
+// Add blood request
 router.post("/add", (req, res) => {
   const {
     requester_name,
@@ -13,52 +13,55 @@ router.post("/add", (req, res) => {
     priority
   } = req.body;
 
-  if (!requester_name || !requester_email || !phone || !blood_group || !location || !priority) {
+  if (!requester_name || !requester_email || !phone || !blood_group || !location) {
     return res.status(400).send("All fields are required");
   }
 
   const sql = `
     INSERT INTO requests
-    (requester_name, requester_email, phone, blood_group, location, priority, status)
-    VALUES (?, ?, ?, ?, ?, ?, 'pending')
+    (requester_name, requester_email, phone, blood_group, location, priority)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   db.query(
     sql,
-    [requester_name, requester_email, phone, blood_group, location, priority],
-    (err, result) => {
+    [
+      requester_name,
+      requester_email,
+      phone,
+      blood_group,
+      location,
+      priority || "normal"
+    ],
+    (err) => {
       if (err) {
-        console.log("Request add error:", err);
+        console.log("Add request error:", err);
         return res.status(500).send("Request creation failed");
       }
 
-      res.send("Request Created Successfully");
+      res.send("Blood request submitted successfully");
     }
   );
 });
 
-// GET ALL REQUESTS
+// Get all requests
 router.get("/", (req, res) => {
   const sql = "SELECT * FROM requests ORDER BY id DESC";
 
   db.query(sql, (err, result) => {
     if (err) {
       console.log("Fetch requests error:", err);
-      return res.status(500).send("Failed to fetch requests");
+      return res.status(500).send("Failed to load requests");
     }
 
     res.json(result);
   });
 });
 
-// UPDATE REQUEST STATUS
+// Update request status
 router.put("/status/:id", (req, res) => {
   const requestId = req.params.id;
   const { status } = req.body;
-
-  if (!status || !["pending", "approved", "rejected"].includes(status)) {
-    return res.status(400).send("Invalid status");
-  }
 
   const sql = "UPDATE requests SET status = ? WHERE id = ?";
 
@@ -76,7 +79,7 @@ router.put("/status/:id", (req, res) => {
   });
 });
 
-// DELETE REQUEST
+// Delete request
 router.delete("/delete/:id", (req, res) => {
   const requestId = req.params.id;
 
@@ -96,7 +99,7 @@ router.delete("/delete/:id", (req, res) => {
   });
 });
 
-// REQUEST COUNT
+// Total request count
 router.get("/count", (req, res) => {
   const sql = "SELECT COUNT(*) AS total FROM requests";
 
@@ -110,14 +113,14 @@ router.get("/count", (req, res) => {
   });
 });
 
-// EMERGENCY COUNT
+// Emergency request count
 router.get("/emergency", (req, res) => {
   const sql = "SELECT COUNT(*) AS total FROM requests WHERE priority = 'emergency'";
 
   db.query(sql, (err, result) => {
     if (err) {
       console.log("Emergency count error:", err);
-      return res.status(500).send("Emergency count failed");
+      return res.status(500).send("Count failed");
     }
 
     res.json(result[0]);
