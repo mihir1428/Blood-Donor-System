@@ -84,6 +84,11 @@ async function registerUser() {
     ? document.getElementById("location").value.trim()
     : "";
 
+  if ((role === "donor" || role === "requester") && (!blood_group || !location)) {
+    alert("Blood group and location are required");
+    return;
+  }
+
   try {
     const res = await fetch(`${API}/users/register`, {
       method: "POST",
@@ -121,7 +126,8 @@ function toggleDonorFields() {
   const donorFields = document.getElementById("donorFields");
   if (!role || !donorFields) return;
 
-  donorFields.style.display = role.value === "donor" ? "block" : "none";
+  donorFields.style.display =
+    role.value === "donor" || role.value === "requester" ? "block" : "none";
 }
 
 // Login
@@ -361,6 +367,68 @@ async function searchDashboardDonors() {
   } catch (error) {
     console.error("Dashboard donor search error:", error);
     resultBox.innerHTML = "<p style='color:red;'>Search failed.</p>";
+  }
+}
+
+// Matched donors for requester dashboard
+async function loadRequesterMatchedDonors() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const tableBody = document.getElementById("matchedDonorTableBody");
+  const infoBox = document.getElementById("matchedDonorInfo");
+
+  if (!user || !tableBody) return;
+
+  try {
+    const res = await fetch(`${API}/donors/smart-match/${user.id}`);
+
+    if (!res.ok) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; color:red;">Failed to load matched donors</td>
+        </tr>
+      `;
+      return;
+    }
+
+    const data = await res.json();
+
+    if (infoBox) {
+      infoBox.innerText =
+        `Your blood group: ${data.requester?.blood_group || "N/A"} | ` +
+        `Your location: ${data.requester?.location || "N/A"} | ` +
+        `Compatible donor groups: ${(data.compatible_groups || []).join(", ")}`;
+    }
+
+    if (!data.donors || data.donors.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center;">No matched donors found</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = data.donors.map((donor) => `
+      <tr>
+        <td>${donor.name || "-"}</td>
+        <td>${donor.blood_group || "-"}</td>
+        <td>${donor.location || "-"}</td>
+        <td>${donor.phone || "-"}</td>
+        <td>${donor.email || "-"}</td>
+        <td>${formatDate(donor.last_donation)}</td>
+        <td class="${getEligibilityClass(donor.eligibility_text)}">${donor.eligibility_text || "-"}</td>
+        <td class="${donor.availability ? "status-available" : "status-unavailable"}">
+          ${donor.availability ? "Available" : "Not Available"}
+        </td>
+      </tr>
+    `).join("");
+  } catch (error) {
+    console.error("Matched donor load error:", error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center; color:red;">Error loading matched donors</td>
+      </tr>
+    `;
   }
 }
 
@@ -786,36 +854,45 @@ async function deleteRequest(requestId) {
 // Chatbot
 function getBotReply(message) {
   const text = message.toLowerCase().trim();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (text.includes("matched") || text.includes("match donor") || text.includes("smart donor")) {
+    return "Matched Donors section shows donors based on your blood group, compatible blood groups, location, availability, and eligibility. Same-location donors are shown first.";
+  }
+
+  if (text.includes("compatible") || text.includes("compatibility") || text.includes("which blood")) {
+    return "The system checks blood compatibility first. For example, an A+ requester can receive from A+, A-, O+, and O-. Then it prioritizes same district, available status, and eligibility.";
+  }
 
   if (text.includes("emergency")) {
-    return "For emergency search, select the blood group and district, then choose Emergency Search. Available and eligible donors will be shown first.";
+    return "For emergency search, select blood group and district, then choose Emergency Search. Available and eligible donors are prioritized first.";
   }
 
   if (text.includes("last donation") || text.includes("donation")) {
-    return "The search result shows the donor's last donation date. A donor is usually considered eligible again after 90 days.";
+    return "Last donation date helps calculate donor eligibility. Usually, after 90 days a donor becomes eligible again.";
   }
 
   if (text.includes("eligible") || text.includes("eligibility")) {
-    return "Eligibility is calculated from the last donation date. If 90 or more days have passed, the donor is eligible. Otherwise, the system shows the remaining waiting time.";
+    return "Eligibility is calculated from the last donation date. If 90 or more days have passed, the donor is eligible. Otherwise the waiting time is shown.";
+  }
+
+  if (text.includes("location") || text.includes("district")) {
+    return `The system tries to show donors from your own district first. Your saved district is ${user?.location || "not found in profile"}.`;
+  }
+
+  if (text.includes("blood group")) {
+    return `Your saved blood group is ${user?.blood_group || "not found in profile"}. The matched donor section uses this blood group to find compatible donors.`;
   }
 
   if (text.includes("dashboard")) {
-    return "The requester dashboard shows total donors, total requests, emergency requests, and blood-group-wise available donor counts.";
+    return "The requester dashboard shows total donors, total requests, emergency requests, blood-group summary, matched donors, donor search, and assistant help.";
   }
 
-  if (text.includes("search") || text.includes("location") || text.includes("district")) {
-    return "You can search donors by blood group, district, availability, and emergency type from both the homepage and the requester dashboard.";
+  if (text.includes("request")) {
+    return "You can click Request Blood to submit a blood request. The matched donor section helps you quickly find suitable donors before or after making a request.";
   }
 
-  if (text.includes("feature") || text.includes("professional")) {
-    return "Professional features include dashboard cards, emergency search, donor eligibility status, last donation tracking, filtered donor search, and assistant support.";
-  }
-
-  if (text.includes("blood")) {
-    return "You can find blood donors by selecting a blood group and district, then applying availability or emergency filters.";
-  }
-
-  return "Hello! I am the Blood Donor System assistant. Ask me about donor search, emergency blood requests, eligibility, districts, or dashboard features.";
+  return "Hello! I can help with matched donors, blood compatibility, emergency donor search, last donation date, eligibility, location-based matching, and dashboard usage.";
 }
 
 function appendChatMessage(text, type) {
