@@ -58,6 +58,26 @@ router.get("/", (req, res) => {
   });
 });
 
+// All pending emergency requests for donor notification icon/panel
+router.get("/all-emergency", (req, res) => {
+  const sql = `
+    SELECT *
+    FROM requests
+    WHERE priority = 'emergency'
+      AND status = 'pending'
+    ORDER BY id DESC
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch all emergency requests error:", err);
+      return res.status(500).send("Failed to load emergency requests");
+    }
+
+    res.json(result);
+  });
+});
+
 // Update request status
 router.put("/status/:id", (req, res) => {
   const requestId = req.params.id;
