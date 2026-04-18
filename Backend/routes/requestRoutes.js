@@ -13,22 +13,14 @@ router.post("/add", (req, res) => {
     priority
   } = req.body;
 
-  // Basic validation
-  if (
-    !requester_name ||
-    !requester_email ||
-    !phone ||
-    !blood_group ||
-    !location ||
-    !priority
-  ) {
+  if (!requester_name || !requester_email || !phone || !blood_group || !location) {
     return res.status(400).send("All fields are required");
   }
 
   const sql = `
     INSERT INTO requests
-    (requester_name, requester_email, phone, blood_group, location, priority, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (requester_name, requester_email, phone, blood_group, location, priority)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   db.query(
@@ -39,16 +31,15 @@ router.post("/add", (req, res) => {
       phone,
       blood_group,
       location,
-      priority || "normal",
-      "pending"
+      priority || "normal"
     ],
-    (err, result) => {
+    (err) => {
       if (err) {
-        console.log("Add request error:", err.sqlMessage || err);
+        console.log("Add request error:", err);
         return res.status(500).send("Request creation failed");
       }
 
-      res.status(201).send("Blood request submitted successfully");
+      res.send("Blood request submitted successfully");
     }
   );
 });
@@ -57,31 +48,51 @@ router.post("/add", (req, res) => {
 router.get("/", (req, res) => {
   const sql = "SELECT * FROM requests ORDER BY id DESC";
 
-  db.query(sql, (err, results) => {
+  db.query(sql, (err, result) => {
     if (err) {
-      console.log("Get requests error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to fetch requests");
+      console.log("Fetch requests error:", err);
+      return res.status(500).send("Failed to load requests");
     }
 
-    res.json(results);
+    res.json(result);
+  });
+});
+
+// All pending emergency requests for donor notification icon/panel
+router.get("/all-emergency", (req, res) => {
+  const sql = `
+    SELECT *
+    FROM requests
+    WHERE priority = 'emergency'
+      AND status = 'pending'
+    ORDER BY id DESC
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch all emergency requests error:", err);
+      return res.status(500).send("Failed to load emergency requests");
+    }
+
+    res.json(result);
   });
 });
 
 // Update request status
 router.put("/status/:id", (req, res) => {
-  const { id } = req.params;
+  const requestId = req.params.id;
   const { status } = req.body;
-
-  if (!status) {
-    return res.status(400).send("Status is required");
-  }
 
   const sql = "UPDATE requests SET status = ? WHERE id = ?";
 
-  db.query(sql, [status, id], (err, result) => {
+  db.query(sql, [status, requestId], (err, result) => {
     if (err) {
-      console.log("Update status error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to update request status");
+      console.log("Update request status error:", err);
+      return res.status(500).send("Status update failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
     }
 
     res.send("Request status updated successfully");
@@ -90,63 +101,49 @@ router.put("/status/:id", (req, res) => {
 
 // Delete request
 router.delete("/delete/:id", (req, res) => {
-  const { id } = req.params;
+  const requestId = req.params.id;
 
   const sql = "DELETE FROM requests WHERE id = ?";
 
-  db.query(sql, [id], (err, result) => {
+  db.query(sql, [requestId], (err, result) => {
     if (err) {
-      console.log("Delete request error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to delete request");
+      console.log("Delete request error:", err);
+      return res.status(500).send("Delete failed");
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("Request not found");
     }
 
     res.send("Request deleted successfully");
   });
 });
 
-// Count all requests
+// Total request count
 router.get("/count", (req, res) => {
-  const sql = "SELECT COUNT(*) AS totalRequests FROM requests";
+  const sql = "SELECT COUNT(*) AS total FROM requests";
 
-  db.query(sql, (err, results) => {
+  db.query(sql, (err, result) => {
     if (err) {
-      console.log("Request count error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to count requests");
+      console.log("Request count error:", err);
+      return res.status(500).send("Count failed");
     }
 
-    res.json(results[0]);
+    res.json(result[0]);
   });
 });
 
-// Count emergency requests
+// Emergency request count
 router.get("/emergency", (req, res) => {
-  const sql = "SELECT COUNT(*) AS emergencyRequests FROM requests WHERE priority = 'emergency'";
+  const sql = "SELECT COUNT(*) AS total FROM requests WHERE priority = 'emergency'";
 
-  db.query(sql, (err, results) => {
+  db.query(sql, (err, result) => {
     if (err) {
-      console.log("Emergency count error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to count emergency requests");
+      console.log("Emergency count error:", err);
+      return res.status(500).send("Count failed");
     }
 
-    res.json(results[0]);
-  });
-});
-
-// Get all pending emergency requests
-router.get("/all-emergency", (req, res) => {
-  const sql = `
-    SELECT * FROM requests
-    WHERE priority = 'emergency' AND status = 'pending'
-    ORDER BY id DESC
-  `;
-
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.log("All emergency requests error:", err.sqlMessage || err);
-      return res.status(500).send("Failed to fetch emergency requests");
-    }
-
-    res.json(results);
+    res.json(result[0]);
   });
 });
 
